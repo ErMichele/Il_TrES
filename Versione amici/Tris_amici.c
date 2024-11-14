@@ -48,7 +48,7 @@ int main() {
     // Spiegazione del gioco
     printf("Per cominciare, vi avviso che il giocatore che gioca per primo sara' l'1 e il secondo 2.\n");
     Sleep(2000);
-    printf("Per poter mettere il proprio segno, si devono inserire le coordinate delle caselle da 0 a 2.\n");
+    printf("Per poter mettere il proprio segno, si devono inserire le coordinate delle caselle da 1 a 3.\n");
     Sleep(3000);
     printf("Con queste informazioni, cominciamo il gioco!\n");
     Sleep(1000);
@@ -86,7 +86,7 @@ int main() {
         system ("cls");
         main ();
     }
-
+    else
     return 0;
 }
 
@@ -95,8 +95,10 @@ int makeMove(char board[3][3], int currentPlayer) {
     int row, col;
     char symbol = (currentPlayer == 1) ? 'X' : 'O'; // Determina il simbolo in base al giocatore
     printBoard(board);
-    printf("Giocatore %d (%c), inserisci la colonna e la riga (0-2) separati da uno spazio: ", currentPlayer, symbol);
+    printf("Giocatore %d (%c), inserisci la colonna e la riga (1-3) separati da uno spazio: ", currentPlayer, symbol);
     scanf("%d %d", &row, &col);
+    row--;
+    col--;
 
     // Assicurati che la riga e la colonna siano nell'intervallo valido
     if (row >= 0 && row < 3 && col >= 0 && col < 3 && board[row][col] == ' ') {
