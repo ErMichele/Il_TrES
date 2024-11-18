@@ -86,7 +86,10 @@ int main() {
         system ("cls");
         main ();
     }
-    else
+    else {
+        printf("Grazie di avermi usaro, alla prossima!");
+        Sleep (2500);
+    }
     return 0;
 }
 
