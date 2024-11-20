@@ -69,9 +69,9 @@ int pareggio(char board[3][3]) {
 // Funzione per la mossa del giocatore (Player 1)
 int mossa(char board[3][3], int currentPlayer) {
     int riga, col;
-    char simbolo = (currentPlayer == 1) ? 'X' : 'O';
+    char simbolo = 'X';
     mostraboard(board);
-    printf("Giocatore %d (%c), inserisci la colonna e la riga (1-3) separati da uno spazio: ", currentPlayer, simbolo);
+    printf("Giocatore, inserisci la colonna e la riga (1-3) separati da uno spazio: ", simbolo);
     scanf("%d %d", &riga, &col);
     riga--;
     col--;
@@ -105,13 +105,6 @@ int trova_mossa_vincente(char board[3][3], char simbolo) {
     }
     return -1;  // Nessuna mossa vincente trovata
 }
-
-// Funzione per bloccare la mossa vincente dell'avversario
-int blocca_mossa(char board[3][3], char simbolo) {
-    char avversario = (simbolo == 'X') ? 'O' : 'X';
-    return trova_mossa_vincente(board, avversario);
-}
-
 // Funzione per la mossa dell'AI (Player 2)
 int mossaComputer(char board[3][3]) {
     int mossaValida = -1;
@@ -128,7 +121,7 @@ int mossaComputer(char board[3][3]) {
     }
 
     // Verifica se l'AI deve bloccare l'avversario
-    mossaValida = blocca_mossa(board, 'O');
+    mossaValida = trova_mossa_vincente(board, 'X');
     if (mossaValida != -1) {
         int riga = mossaValida / 3;
         int col = mossaValida % 3;
@@ -163,7 +156,7 @@ int main() {
     printf("\nBenvenuti al Tris\n\n");
     Sleep(1000);
 
-    printf("Per giocare contro la macchina, sei pronto? ");
+    printf("Stai per giocare contro di me, sei pronto? ");
     do {
         scanf("%s", controlli);
         minuscola(controlli);
@@ -180,32 +173,28 @@ int main() {
         }
     } while (!start);
 
-    printf("Il giocatore che gioca per primo sara' l'1 (Umano) e il secondo sarà la macchina.\n");
+    printf("Il giocatore 1, che gioca per primo sarai tu e io saro' il giocatore 2 che gioca per secondo.\n");
     Sleep(2000);
-    printf("Per poter mettere il proprio segno, si devono inserire le coordinate delle caselle da 1 a 3.\n");
+    printf("Per poter mettere il tuo segno, devi inserire le coordinate delle caselle da 1 a 3.\n");
     Sleep(3000);
     printf("Con queste informazioni, cominciamo il gioco!\n");
     Sleep(1000);
-
+    while (1) {
     sistemaboard(board);
 
     while (!Vincita && !pareggio(board)) {  
-        // Turno del giocatore umano (Player 1)
+        currentPlayer = 1;
         while (!mossa(board, currentPlayer)) {
             // Ripeti fino a che non viene effettuata una mossa valida
         }
 
         Vincita = vittoria(board);
         if (!Vincita && !pareggio(board)) {
-            // Turno della macchina (AI)
             currentPlayer = 2;
             mossaComputer(board);
         }
 
         Vincita = vittoria(board);
-        if (!Vincita) {
-            currentPlayer = 1; // Passa al turno del giocatore
-        }
     }
 
     mostraboard(board);
@@ -224,11 +213,11 @@ int main() {
         printf("Va bene, ripreparo tutto!\n");
         Sleep(3000);
         system("cls");
-        main();  
+        Vincita = 0;  
     } else {
         printf("Grazie di avermi usato, alla prossima volta!\n");
         Sleep(2400);
+        return 0;
     }
-
-    return 0;
+    }
 }
