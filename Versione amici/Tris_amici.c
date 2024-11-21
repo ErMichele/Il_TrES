@@ -116,6 +116,7 @@ int main() {
     printf("Con queste informazioni, cominciamo il gioco!\n");
     Sleep(1000);
 
+    while(1){
     sistemaboard(board);
 
     while (!Vincita && !pareggio(board)) {  // Fixed condition here
@@ -144,12 +145,12 @@ int main() {
     if (strcmp("si", controlli) == 0) {
         printf("Va bene, ripreparo tutto!\n");
         Sleep(3000);
-        system("cls");
-        main();  
+        system("cls"); 
+        Vincita=0;
     } else {
         printf("Grazie di avermi usato, alla prossima volta!\n");
         Sleep(2400);
+        return 0;
     }
-
-    return 0;
+}
 }
