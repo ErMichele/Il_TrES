@@ -167,7 +167,7 @@ int main () {
     do {
         printf("\n----IL TRIS----\n\n");
         Sleep(1000);
-        printf("Benvenuti, per cominciare scegliere la modalità di gioco:\n1) Contro di me;\n2) Contro un altro giocatore in locale;\nCosa scegliete (1/2)? ");
+        printf("Benvenuti, per cominciare scegliere la modalita' di gioco:\n1) Contro di me;\n2) Contro un altro giocatore in locale;\nCosa scegliete (1/2)? ");
         scanf("%d", &modalità);
         if (modalità != 1 && modalità != 2) {
             printf("Inserito un valore non usabile, riprovare.\n");
