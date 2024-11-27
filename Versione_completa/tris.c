@@ -83,21 +83,20 @@ int mossaSingolo(char board[3][3], int currentPlayer) {
     }
 }
 
-// Funzione per trovare la mossa vincente per l'AI (Player 2)
 int trova_mossa_vincente(char board[3][3], char simbolo) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (board[i][j] == ' ') {
-                board[i][j] = simbolo;  // Prova la mossa
+                board[i][j] = simbolo;
                 if (vittoria(board)) {
-                    board[i][j] = ' ';  // Annulla la mossa
-                    return i * 3 + j;    // Ritorna la posizione della mossa vincente
+                    board[i][j] = ' ';
+                    return i * 3 + j;
                 }
-                board[i][j] = ' ';  // Annulla la mossa
+                board[i][j] = ' ';
             }
         }
     }
-    return -1;  // Nessuna mossa vincente trovata
+    return -1;
 }
 
 int mossaComputer(char board[3][3]) {
@@ -204,12 +203,10 @@ int main () {
 
             while (1) {
                 sistemaboard(board);
-                Vincita = 0;  // Resetting Vincita here is enough
+                Vincita = 0;
                 while (!Vincita && !pareggio(board)) {
                     currentPlayer = 1;
-                    while (!mossaSingolo(board, currentPlayer)) {
-                        // Ripeti fino a che non viene effettuata una mossa valida
-                    }
+                    while (!mossaSingolo(board, currentPlayer)) {}
                     Vincita = vittoria(board);
                     if (!Vincita && !pareggio(board)) {
                         currentPlayer = 2;
@@ -264,20 +261,16 @@ int main () {
 
             while (1) {
                 sistemaboard(board);
-                Vincita = 0;  // Resetting Vincita here is enough
+                Vincita = 0;
                 while (!Vincita && !pareggio(board)) {
                     currentPlayer = 1;
-                    while (!mossaDoppio(board, currentPlayer)) {
-                        // Ripeti fino a che non viene effettuata una mossa valida
-                    }
+                    while (!mossaDoppio(board, currentPlayer)) {}
                     Vincita = vittoria(board);
                     if (!Vincita) {
                         currentPlayer = 2;
-                        while (!mossaDoppio(board, currentPlayer)) {
-                            // Ripeti fino a che non viene effettuata una mossa valida
-                        }
+                        while (!mossaDoppio(board, currentPlayer)) {}
+                        Vincita = vittoria(board);
                     }
-                    Vincita = vittoria(board);
                 }
 
                 mostraboard(board);
