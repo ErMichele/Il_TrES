@@ -7,7 +7,7 @@
 
 void minuscola(char *str) {
     for (int i = 0; str[i]; i++) {
-        str[i] = tolower((unsigned char)str[i]);
+        str[i] = (char)tolower((unsigned char)str[i]);
     }
 }
 
@@ -121,7 +121,7 @@ int mossaComputer(char board[3][3]) {
         return 1;
     }
 
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     while (1) {
         int riga = rand() % 3;
         int col = rand() % 3;
