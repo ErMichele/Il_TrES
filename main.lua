@@ -23,3 +23,8 @@ function Tabella_Lua_C(Tavola)
 end
 
 print(Backend.Vittoria(Tabella_Lua_C(Tabella)))
+
+function love.load()
+    love.window.setTitle("Tris")
+    love.graphics.setFont(love.graphics.newFont(20))
+end
