@@ -26,5 +26,6 @@ print(Backend.Vittoria(Tabella_Lua_C(Tabella)))
 
 function love.load()
     love.window.setTitle("Tris")
+    love.window.setIcon(love.image.newImageData("Resources/Icon/Tris_icon.png"))
     love.graphics.setFont(love.graphics.newFont(20))
 end
