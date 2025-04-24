@@ -3,9 +3,7 @@
 __declspec(dllexport) int Pareggio(char Tavola[3][3]) {
     for (int Riga = 0; Riga < 3; Riga++) {
         for (int Colonna = 0; Colonna < 3; Colonna++) {
-            if (Tavola[Riga][Colonna] == ' ') {
-                return -1;
-            }
+            if (Tavola[Riga][Colonna] == ' ') return -1;
         }
     }
     return 1;
