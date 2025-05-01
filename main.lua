@@ -63,18 +63,20 @@ end
 
 function love.draw()
     if SchedaSelezionata == "Menu" then
-        love.graphics.printf("Menu del Gioco", 0, 50, love.graphics.getWidth(), "center")
+        love.graphics.clear(0.68, 0.85, 0.9)
+
+        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 60))
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("IL TRIS", 0, 50, love.graphics.getWidth(), "center")
 
         for i, Scelta in ipairs(Menu) do
             if i == MenuScelta then
-                love.graphics.setColor(1, 0, 0) -- Colore rosso per l'opzione selezionata
+                love.graphics.setColor(1, 1, 0)
             else
-                love.graphics.setColor(1, 1, 1) -- Colore bianco per le altre opzioni
+                love.graphics.setColor(0.7, 0.5, 0)
             end
-
-            love.graphics.printf(Scelta, 0, 100 + i * 30, love.graphics.getWidth(), "center")
+            love.graphics.setFont(love.graphics.newFont(20))
+            love.graphics.printf(Scelta, 0, 150 + i * 50, love.graphics.getWidth(), "center")
         end
-
-        love.graphics.setColor(1, 1, 1)
     end
 end
