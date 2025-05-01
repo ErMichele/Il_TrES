@@ -20,3 +20,7 @@ __declspec(dllexport) int Vittoria(char Tavola[3][3]) {
     if (Tavola[0][2] == Tavola[1][1] && Tavola[1][1] == Tavola[2][0] && Tavola[0][2] != ' ') return 1;
     return -1;
 }
+
+__declspec(dllexport) void Log(const char *Tipo, const char *Messaggio) {
+    Logging(Tipo, Messaggio);
+}

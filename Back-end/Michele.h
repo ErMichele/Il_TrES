@@ -373,13 +373,23 @@ void Logging(const char *Tipo, const char *Messaggio, ...) {
     struct tm *local_time = localtime(&now);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", local_time);
 
-    // Aprire il file di log in modalità append
-    FILE *log_file = fopen("logs.log", "a");
+    // Define the log file path
+    const char *logFilePath = "./Logs/log.log";  // Uses relative path
+
+    // Open the log file in append mode
+    FILE *log_file = fopen(logFilePath, "a");
     if (!log_file) {
-        // Prova ad aprire il file in modalità scrittura se non esiste
-        log_file = fopen("logs.log", "w");
+        // Try creating the directory if it doesn't exist
+        #ifdef _WIN32
+            _mkdir("./Logs");
+        #else
+            mkdir("./Logs", 0777);
+        #endif
+
+        // Attempt to open the file again
+        log_file = fopen(logFilePath, "a");
         if (!log_file) {
-            printf("Errore nell'apertura del file di log");
+            printf("Errore nell'apertura del file di log\n");
             return;
         }
     }
