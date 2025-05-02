@@ -5,6 +5,9 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 // =====================================================================================
 // Console Text Formatting Macros
@@ -373,25 +376,49 @@ void Logging(const char *Tipo, const char *Messaggio, ...) {
     struct tm *local_time = localtime(&now);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", local_time);
 
-    // Define the log file path
-    const char *logFilePath = "./Logs/log.log";  // Uses relative path
+    const char *logDir = "./Logs/";
+    const char *logBase = "log";
+    const char *logExt = ".log";
+    const int maxLines = 1000;
 
-    // Open the log file in append mode
-    FILE *log_file = fopen(logFilePath, "a");
-    if (!log_file) {
-        // Try creating the directory if it doesn't exist
-        #ifdef _WIN32
-            _mkdir("./Logs");
-        #else
-            mkdir("./Logs", 0777);
-        #endif
+    char logFilePath[256];
+    snprintf(logFilePath, sizeof(logFilePath), "%s%s%s", logDir, logBase, logExt);
 
-        // Attempt to open the file again
-        log_file = fopen(logFilePath, "a");
-        if (!log_file) {
-            printf("Errore nell'apertura del file di log\n");
-            return;
+    #ifdef _WIN32
+        _mkdir(logDir);
+    #else
+        mkdir(logDir, 0777);
+    #endif
+
+    FILE *log_file = fopen(logFilePath, "r");
+    int lines = 0;
+    char buffer[1024];
+
+    if (log_file) {
+        while (fgets(buffer, sizeof(buffer), log_file)) {
+            lines++;
         }
+        fclose(log_file);
+    }
+
+    if (lines >= maxLines) {
+        char old_name[256], new_name[256];
+
+        for (int i = 9; i >= 1; i--) {
+            snprintf(old_name, sizeof(old_name), "%s%s%d%s", logDir, logBase, i, logExt);
+            snprintf(new_name, sizeof(new_name), "%s%s%d%s", logDir, logBase, i + 1, logExt);
+            rename(old_name, new_name);
+        }
+
+        snprintf(old_name, sizeof(old_name), "%s%s%s", logDir, logBase, logExt);
+        snprintf(new_name, sizeof(new_name), "%s%s1%s", logDir, logBase, logExt);
+        rename(old_name, new_name);
+    }
+
+    log_file = fopen(logFilePath, "a");
+    if (!log_file) {
+        printf("Errore nell'apertura del file di log\n");
+        return;
     }
 
     va_list args;
@@ -403,6 +430,11 @@ void Logging(const char *Tipo, const char *Messaggio, ...) {
 
     fprintf(log_file, "<%s> [%s] ", timestamp, Tipo);
     vfprintf(log_file, Messaggio, args);
+
+    if (strcmp(Tipo, "CLOSE") == 0) {
+        fprintf(log_file, "\n\n-----------------------------------------------------------------------------------------------------------\n");
+    }
+
     fprintf(log_file, "\n");
 
     va_end(args);

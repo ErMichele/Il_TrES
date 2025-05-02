@@ -41,13 +41,22 @@ function ResetGame()
     Giocatore = 1
 end
 
+function Debbuging(Tipo, Msg)
+    print("[" .. Tipo .. "] " .. Msg)
+    Backend.Log(Tipo, Msg)
+end
+
 function love.load()
     love.window.setTitle("Tris")
     love.window.setIcon(love.image.newImageData("Resources/Icon/Tris_icon.png"))
     love.graphics.setFont(love.graphics.newFont(20))
     IconaRestart = love.graphics.newImage("Resources/Game_Buttons/Restart.png")
 
-    Backend.Log("START", "Gioco avviato con successo, buon divertimento!")
+    Debbuging("START", "Gioco avviato con successo, buon divertimento!")
+end
+
+function love.quit()
+    Debbuging("CLOSE", "Il gioco è stato chiuso.")
 end
 
 function love.keypressed(key)
@@ -75,8 +84,7 @@ function love.keypressed(key)
             elseif Menu[MenuScelta] == "Exit" then
                 love.event.quit()
             end
-            Backend.Log("INFO", Msg)
-            print(Msg)
+            Debbuging("INFO", Msg)
             SchedaSelezionata = Menu[MenuScelta]
         end
     end
@@ -96,9 +104,8 @@ function love.mousepressed(x, y, button)
 
                 if x >= cellX and x <= cellX + cellSize and y >= cellY and y <= cellY + cellSize then
                     if Tabella[Riga][Colonna] == ' ' then
-                        Msg = "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna
-                        print(Msg)
-                        Backend.Log("DEBUG", Msg)
+                        Debbuging("DEBUG",
+                            "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna)
                         if Giocatore == 1 then
                             Tabella[Riga][Colonna] = 'X'
                         else
@@ -111,16 +118,12 @@ function love.mousepressed(x, y, button)
         local result = Backend.Vittoria(Tabella_Lua_C(Tabella))
         if result ~= 0 then
             StadioGioco = result
-            Msg = "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!"
-            Backend.Log("INFO", Msg)
-            print(Msg)
+            Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
         else
             result = Backend.Pareggio(Tabella_Lua_C(Tabella))
             if result == -1 then
                 StadioGioco = result
-                Msg = "Partita finita col pareggio!"
-                Backend.Log("INFO", Msg)
-                print(Msg)
+                Debbuging("INFO", "Partita finita col pareggio!")
             end
         end
         if Giocatore == 1 then
@@ -135,9 +138,17 @@ function love.mousepressed(x, y, button)
 
         if button == 1 and x >= restartX and x <= restartX + restartSize and y >= restartY and y <= restartY + restartSize then
             ResetGame()
-            Msg = "Partita resettata!"
-            Backend.Log("INFO", Msg)
-            print(Msg)
+            Debbuging("INFO", "Partita resettata!")
+        end
+
+        local exitSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.1
+        local exitX = love.graphics.getWidth() * 0.95 - exitSize
+        local exitY = love.graphics.getHeight() * 0.02
+
+        if x >= exitX and x <= exitX + exitSize and y >= exitY and y <= exitY + exitSize then
+            SchedaSelezionata = "Menu"
+            ResetGame()
+            Debbuging("INFO", "Tornato al menu principale")
         end
     end
 end
@@ -178,7 +189,7 @@ function love.draw()
             local offsetX = (love.graphics.getWidth() - tableSize) / 2
             local offsetY = (love.graphics.getHeight() - tableSize) / 2
             local cellSize = tableSize / 3
-    
+
             -- Draw grid lines
             love.graphics.setColor(1, 1, 1)
             love.graphics.setLineWidth(2)
@@ -186,7 +197,7 @@ function love.draw()
             love.graphics.line(offsetX + 2 * cellSize, offsetY, offsetX + 2 * cellSize, offsetY + tableSize)
             love.graphics.line(offsetX, offsetY + cellSize, offsetX + tableSize, offsetY + cellSize)
             love.graphics.line(offsetX, offsetY + 2 * cellSize, offsetX + tableSize, offsetY + 2 * cellSize)
-    
+
             -- Draw player marks dynamically
             for i = 1, 3 do
                 for j = 1, 3 do
@@ -199,11 +210,11 @@ function love.draw()
                     end
                 end
             end
-    
+
             if StadioGioco > 0 then
                 love.graphics.setColor(1, 0, 0)
                 love.graphics.setLineWidth(5)
-    
+
                 if StadioGioco >= 10 and StadioGioco < 20 then -- Row win
                     local row = StadioGioco - 10
                     love.graphics.line(offsetX, offsetY + row * cellSize + cellSize / 2, offsetX + tableSize,
@@ -219,15 +230,22 @@ function love.draw()
                 end
             end
         elseif SchedaSelezionata == "Online" then
-        
-        end
 
+        end
     end
     if StadioGioco ~= 0 then
-        local restartSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.1  -- Scale button size
-        local restartX = love.graphics.getWidth() * 0.02  -- Position it dynamically (left)
-        local restartY = love.graphics.getHeight() * 0.02 -- Position it dynamically (top)
-    
-        love.graphics.draw(IconaRestart, restartX, restartY, 0, restartSize / IconaRestart:getWidth(), restartSize / IconaRestart:getHeight())
+        local buttonSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08  -- Slightly smaller
+        
+        local restartX = love.graphics.getWidth() * 0.02
+        local restartY = love.graphics.getHeight() * 0.02
+        love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(), buttonSize / IconaRestart:getHeight())
+
+        local exitX = love.graphics.getWidth() - buttonSize - love.graphics.getWidth() * 0.02
+        local exitY = restartY
+
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.setLineWidth(4)
+        love.graphics.line(exitX + buttonSize * 0.1, exitY + buttonSize * 0.1, exitX + buttonSize * 0.9, exitY + buttonSize * 0.9) -- Diagonal line /
+        love.graphics.line(exitX + buttonSize * 0.9, exitY + buttonSize * 0.1, exitX + buttonSize * 0.1, exitY + buttonSize * 0.9) -- Diagonal line \
     end
 end
