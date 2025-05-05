@@ -7,6 +7,10 @@ ffi.cdef [[
 local Backend = ffi.load("Back-end\\Back.dll")
 local Msg
 
+local musicTracks = {}
+local currentTrack = 1
+local music
+
 local Tabella = {
     { ' ', ' ', ' ' },
     { ' ', ' ', ' ' },
@@ -52,11 +56,35 @@ function love.load()
     love.graphics.setFont(love.graphics.newFont(20))
     IconaRestart = love.graphics.newImage("Resources/Game_Buttons/Restart.png")
 
+    for _, file in ipairs(love.filesystem.getDirectoryItems("Resources/Music")) do
+        if file:match("%.ogg$") or file:match("%.mp3$") then
+            table.insert(musicTracks, "Resources/Music/" .. file)
+        end
+    end
+
     Debbuging("START", "Gioco avviato con successo, buon divertimento!")
 end
 
 function love.quit()
-    Debbuging("CLOSE", "Il gioco è stato chiuso.")
+    Debbuging("CLOSE", "Il gioco e' stato chiuso.")
+end
+
+function love.update(dt)
+    if music and music:isPlaying() and musicTracks[1] then return end
+
+    local success, newMusic = pcall(love.audio.newSource, musicTracks[currentTrack], "stream")
+    if success then
+        music = newMusic
+        music:setLooping(false)
+        music:play()
+        Debbuging("DEBUG", "Avviato la esecuzione di " .. musicTracks[currentTrack] .. "!")
+    else
+        if musicTracks[currentTrack] ~= nil then
+            Debbuging("ERRORE", musicTracks[currentTrack] .. " non può essere caricato!")
+        end
+    end
+
+    currentTrack = (currentTrack % #musicTracks) + 1
 end
 
 function love.keypressed(key)
@@ -104,8 +132,7 @@ function love.mousepressed(x, y, button)
 
                 if x >= cellX and x <= cellX + cellSize and y >= cellY and y <= cellY + cellSize then
                     if Tabella[Riga][Colonna] == ' ' then
-                        Debbuging("DEBUG",
-                            "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna)
+                        Debbuging("DEBUG", "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna)
                         if Giocatore == 1 then
                             Tabella[Riga][Colonna] = 'X'
                         else
@@ -115,14 +142,14 @@ function love.mousepressed(x, y, button)
                 end
             end
         end
-        local result = Backend.Vittoria(Tabella_Lua_C(Tabella))
-        if result ~= 0 then
-            StadioGioco = result
+        local Risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
+        if Risultato ~= 0 then
+            StadioGioco = Risultato
             Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
         else
-            result = Backend.Pareggio(Tabella_Lua_C(Tabella))
+            Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
             if result == -1 then
-                StadioGioco = result
+                StadioGioco = Risultato
                 Debbuging("INFO", "Partita finita col pareggio!")
             end
         end
@@ -234,18 +261,21 @@ function love.draw()
         end
     end
     if StadioGioco ~= 0 then
-        local buttonSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08  -- Slightly smaller
-        
+        local buttonSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08 -- Slightly smaller
+
         local restartX = love.graphics.getWidth() * 0.02
         local restartY = love.graphics.getHeight() * 0.02
-        love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(), buttonSize / IconaRestart:getHeight())
+        love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(),
+            buttonSize / IconaRestart:getHeight())
 
         local exitX = love.graphics.getWidth() - buttonSize - love.graphics.getWidth() * 0.02
         local exitY = restartY
 
         love.graphics.setColor(1, 1, 1)
         love.graphics.setLineWidth(4)
-        love.graphics.line(exitX + buttonSize * 0.1, exitY + buttonSize * 0.1, exitX + buttonSize * 0.9, exitY + buttonSize * 0.9) -- Diagonal line /
-        love.graphics.line(exitX + buttonSize * 0.9, exitY + buttonSize * 0.1, exitX + buttonSize * 0.1, exitY + buttonSize * 0.9) -- Diagonal line \
+        love.graphics.line(exitX + buttonSize * 0.1, exitY + buttonSize * 0.1, exitX + buttonSize * 0.9,
+            exitY + buttonSize * 0.9)                                                                                              -- Diagonal line /
+        love.graphics.line(exitX + buttonSize * 0.9, exitY + buttonSize * 0.1, exitX + buttonSize * 0.1,
+            exitY + buttonSize * 0.9)                                                                                              -- Diagonal line \
     end
 end
