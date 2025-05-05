@@ -19,7 +19,7 @@ local Tabella = {
 }
 local SchedaSelezionata = "Menu"
 
-local Menu = { "SinglePlayer", "MultiPlayer",  "Exit" }
+local Menu = { "SinglePlayer", "MultiPlayer", "Crediti", "Exit" }
 local MenuScelta = 1
 
 local StadioGioco = 0
@@ -110,6 +110,9 @@ function love.keypressed(key)
             elseif Menu[MenuScelta] == "Online" then
                 Msg = "Avvio Online (Ancora da aggiungere)!"
                 love.window.setTitle("Tris - Online")
+            elseif Menu[MenuScelta] == "Crediti" then
+                Msg = "Visualizzazione dei crediti"
+                love.window.setTitle("Tris - Crediti")
             elseif Menu[MenuScelta] == "Exit" then
                 love.event.quit()
             end
@@ -118,6 +121,9 @@ function love.keypressed(key)
                 SchedaSelezionata = Menu[MenuScelta]
             end
         end
+    elseif SchedaSelezionata == "Crediti" and key == "escape" then
+        SchedaSelezionata = "Menu"
+        love.window.setTitle("Tris")
     end
 end
 
@@ -263,13 +269,34 @@ function love.draw()
             local menuY = menuStartY + (i - 1) * menuSpacing
             love.graphics.printf(Scelta, 0, menuY, love.graphics.getWidth(), "center")
         end
+    elseif SchedaSelezionata == "Crediti" then
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28))
+    
+        local Testo = {
+            "IL TRIS - Crediti",
+            "",
+            "Sviluppato da: Michele",
+            "Libreria Grafica: LOVE2D",
+            "Linguaggio: Lua + C (DLL)",
+            "AI & Logica: Codice nativo in C",
+            "",
+            "Musica: brani nella cartella Resources/Music",
+            "",
+            "Grazie per aver giocato!",
+            "",
+            "Premi [Esc] per tornare al menu"
+        }
+    
+        for i, line in ipairs(Testo) do
+            love.graphics.printf(line, 0, 100 + i * 30, love.graphics.getWidth(), "center")
+        end
     else
         local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
         local offsetX = (love.graphics.getWidth() - tableSize) / 2
         local offsetY = (love.graphics.getHeight() - tableSize) / 2
         local cellSize = tableSize / 3
 
-        -- Draw grid lines
         love.graphics.setColor(1, 1, 1)
         love.graphics.setLineWidth(2)
         love.graphics.line(offsetX + cellSize, offsetY, offsetX + cellSize, offsetY + tableSize)
