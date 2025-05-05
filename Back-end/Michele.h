@@ -385,7 +385,7 @@ void Logging(const char *Tipo, const char *Messaggio, ...) {
     snprintf(logFilePath, sizeof(logFilePath), "%s%s%s", logDir, logBase, logExt);
 
     #ifdef _WIN32
-        _mkdir(logDir);
+        mkdir(logDir);
     #else
         mkdir(logDir, 0777);
     #endif

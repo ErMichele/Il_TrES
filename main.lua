@@ -19,7 +19,7 @@ local Tabella = {
 }
 local SchedaSelezionata = "Menu"
 
-local Menu = { "SinglePlayer", "MultiPlayer", "Online", "Exit" }
+local Menu = { "SinglePlayer", "MultiPlayer",  "Exit" }
 local MenuScelta = 1
 
 local StadioGioco = 0
@@ -163,46 +163,57 @@ function love.mousepressed(x, y, button)
         local offsetX = (love.graphics.getWidth() - tableSize) / 2
         local offsetY = (love.graphics.getHeight() - tableSize) / 2
         local cellSize = tableSize / 3
-
+    
+        local mossaEseguita = false
         for Riga = 1, 3 do
             for Colonna = 1, 3 do
                 local cellX = offsetX + (Colonna - 1) * cellSize
                 local cellY = offsetY + (Riga - 1) * cellSize
-
+    
                 if x >= cellX and x <= cellX + cellSize and y >= cellY and y <= cellY + cellSize then
                     if Tabella[Riga][Colonna] == ' ' then
-                        Debbuging("DEBUG", "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna)
+                        Debbuging("DEBUG", "Il giocatore ha cliccato la casella: " .. Riga .. ", " .. Colonna)
                         Tabella[Riga][Colonna] = 'X'
+                        mossaEseguita = true
                     end
                 end
             end
         end
-        local Risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
-        if Risultato ~= 0 then
-            StadioGioco = Risultato
-            Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
-        else
-            Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
-            if Risultato == -1 then
-                StadioGioco = Risultato
-                Debbuging("INFO", "Partita finita col pareggio!")
+    
+        if mossaEseguita then
+            local risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
+            if risultato ~= 0 then
+                StadioGioco = risultato
+                Debbuging("INFO", "Il giocatore ha vinto con il risultato = " .. StadioGioco .. "!")
+                return
+            else
+                risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
+                if risultato == -1 then
+                    StadioGioco = risultato
+                    Debbuging("INFO", "Partita finita col pareggio!")
+                    return
+                end
             end
-        end
-        --Mossa CPU
-        local Casella = Backend.mossaComputer(Tabella_Lua_C(Tabella))
-        local Xcord = Casella / 3;
-        local Ycord = Casella % 3;
-        Tabella[Xcord][Ycord] = 'O'
-        Debbuging("DEBUG", "La CPU ha eseguito la seguente mossa: " .. Xcord .. ", " .. Ycord .. "!")
-        local Risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
-        if Risultato ~= 0 then
-            StadioGioco = Risultato
-            Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
-        else
-            Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
-            if Risultato == -1 then
-                StadioGioco = Risultato
-                Debbuging("INFO", "Partita finita col pareggio!")
+    
+            -- CPU Move only if game isn't over
+            if StadioGioco == 0 then
+                local Casella = Backend.mossaComputer(Tabella_Lua_C(Tabella))
+                local Xcord = math.floor(Casella / 3) + 1
+                local Ycord = (Casella % 3) + 1
+                Tabella[Xcord][Ycord] = 'O'
+                Debbuging("DEBUG", "La CPU ha eseguito la seguente mossa: " .. Xcord .. ", " .. Ycord .. "!")
+    
+                risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
+                if risultato ~= 0 then
+                    StadioGioco = risultato
+                    Debbuging("INFO", "La CPU ha vinto con il risultato = " .. StadioGioco .. "!")
+                else
+                    risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
+                    if risultato == -1 then
+                        StadioGioco = risultato
+                        Debbuging("INFO", "Partita finita col pareggio!")
+                    end
+                end
             end
         end
     elseif button == 1 and StadioGioco ~= 0 then
@@ -277,9 +288,6 @@ function love.draw()
                     love.graphics.printf(Tabella[i][j], cellX, cellY + cellSize * 0.25, cellSize, "center")
                 end
             end
-        end
-        if SchedaSelezionata == "Online" then
-
         end
         if StadioGioco > 0 then
             love.graphics.setColor(1, 0, 0)
