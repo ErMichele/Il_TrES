@@ -3,6 +3,7 @@ ffi.cdef [[
     int Pareggio(char Tavola[3][3]);
     int Vittoria(char Tavola[3][3]);
     void Log(const char *Tipo, const char *Messaggio);
+    int mossaComputer(char board[3][3]);
 ]]
 local Backend = ffi.load("Back-end\\Back.dll")
 local Msg
@@ -112,8 +113,10 @@ function love.keypressed(key)
             elseif Menu[MenuScelta] == "Exit" then
                 love.event.quit()
             end
-            Debbuging("INFO", Msg)
-            SchedaSelezionata = Menu[MenuScelta]
+            if Menu[MenuScelta] ~= "Exit" then
+                Debbuging("INFO", Msg)
+                SchedaSelezionata = Menu[MenuScelta]
+            end
         end
     end
 end
@@ -148,15 +151,59 @@ function love.mousepressed(x, y, button)
             Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
         else
             Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
-            if result == -1 then
+            if Risultato == -1 then
                 StadioGioco = Risultato
                 Debbuging("INFO", "Partita finita col pareggio!")
             end
         end
-        if Giocatore == 1 then
-            Giocatore = 2
+        if Giocatore == 1 then Giocatore = 2 else Giocatore = 1 end
+
+    elseif button == 1 and SchedaSelezionata == "SinglePlayer" and StadioGioco == 0 then
+        local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
+        local offsetX = (love.graphics.getWidth() - tableSize) / 2
+        local offsetY = (love.graphics.getHeight() - tableSize) / 2
+        local cellSize = tableSize / 3
+
+        for Riga = 1, 3 do
+            for Colonna = 1, 3 do
+                local cellX = offsetX + (Colonna - 1) * cellSize
+                local cellY = offsetY + (Riga - 1) * cellSize
+
+                if x >= cellX and x <= cellX + cellSize and y >= cellY and y <= cellY + cellSize then
+                    if Tabella[Riga][Colonna] == ' ' then
+                        Debbuging("DEBUG", "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna)
+                        Tabella[Riga][Colonna] = 'X'
+                    end
+                end
+            end
+        end
+        local Risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
+        if Risultato ~= 0 then
+            StadioGioco = Risultato
+            Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
         else
-            Giocatore = 1
+            Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
+            if Risultato == -1 then
+                StadioGioco = Risultato
+                Debbuging("INFO", "Partita finita col pareggio!")
+            end
+        end
+        --Mossa CPU
+        local Casella = Backend.mossaComputer(Tabella_Lua_C(Tabella))
+        local Xcord = Casella / 3;
+        local Ycord = Casella % 3;
+        Tabella[Xcord][Ycord] = 'O'
+        Debbuging("DEBUG", "La CPU ha eseguito la seguente mossa: " .. Xcord .. ", " .. Ycord .. "!")
+        local Risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
+        if Risultato ~= 0 then
+            StadioGioco = Risultato
+            Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
+        else
+            Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
+            if Risultato == -1 then
+                StadioGioco = Risultato
+                Debbuging("INFO", "Partita finita col pareggio!")
+            end
         end
     elseif button == 1 and StadioGioco ~= 0 then
         local restartSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.1
@@ -184,14 +231,12 @@ function love.draw()
     love.graphics.clear(0.68, 0.85, 0.9)
 
     if SchedaSelezionata == "Menu" then
-        -- Title dynamically sized and positioned
         local titleFontSize = love.graphics.getHeight() * 0.1
         local titleY = love.graphics.getHeight() * 0.1
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
         love.graphics.setColor(1, 1, 1)
         love.graphics.printf("IL TRIS", 0, titleY, love.graphics.getWidth(), "center")
 
-        -- Menu options dynamically sized and positioned
         local menuFontSize = love.graphics.getHeight() * 0.05
         local menuStartY = love.graphics.getHeight() * 0.3
         local menuSpacing = love.graphics.getHeight() * 0.08
@@ -208,74 +253,66 @@ function love.draw()
             love.graphics.printf(Scelta, 0, menuY, love.graphics.getWidth(), "center")
         end
     else
-        if SchedaSelezionata == "SinglePlayer" then
+        local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
+        local offsetX = (love.graphics.getWidth() - tableSize) / 2
+        local offsetY = (love.graphics.getHeight() - tableSize) / 2
+        local cellSize = tableSize / 3
 
-        elseif SchedaSelezionata == "MultiPlayer" then
-            -- Grid dynamically sized as before
-            local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
-            local offsetX = (love.graphics.getWidth() - tableSize) / 2
-            local offsetY = (love.graphics.getHeight() - tableSize) / 2
-            local cellSize = tableSize / 3
+        -- Draw grid lines
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.setLineWidth(2)
+        love.graphics.line(offsetX + cellSize, offsetY, offsetX + cellSize, offsetY + tableSize)
+        love.graphics.line(offsetX + 2 * cellSize, offsetY, offsetX + 2 * cellSize, offsetY + tableSize)
+        love.graphics.line(offsetX, offsetY + cellSize, offsetX + tableSize, offsetY + cellSize)
+        love.graphics.line(offsetX, offsetY + 2 * cellSize, offsetX + tableSize, offsetY + 2 * cellSize)
 
-            -- Draw grid lines
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.setLineWidth(2)
-            love.graphics.line(offsetX + cellSize, offsetY, offsetX + cellSize, offsetY + tableSize)
-            love.graphics.line(offsetX + 2 * cellSize, offsetY, offsetX + 2 * cellSize, offsetY + tableSize)
-            love.graphics.line(offsetX, offsetY + cellSize, offsetX + tableSize, offsetY + cellSize)
-            love.graphics.line(offsetX, offsetY + 2 * cellSize, offsetX + tableSize, offsetY + 2 * cellSize)
-
-            -- Draw player marks dynamically
-            for i = 1, 3 do
-                for j = 1, 3 do
-                    local cellX = offsetX + (j - 1) * cellSize
-                    local cellY = offsetY + (i - 1) * cellSize
-                    if Tabella[i][j] ~= ' ' then
-                        love.graphics.setFont(love.graphics.newFont(cellSize * 0.5))
-                        love.graphics.setColor(1, 0, 0)
-                        love.graphics.printf(Tabella[i][j], cellX, cellY + cellSize * 0.25, cellSize, "center")
-                    end
+        -- Draw player marks dynamically
+        for i = 1, 3 do
+            for j = 1, 3 do
+                local cellX = offsetX + (j - 1) * cellSize
+                local cellY = offsetY + (i - 1) * cellSize
+                if Tabella[i][j] ~= ' ' then
+                    love.graphics.setFont(love.graphics.newFont(cellSize * 0.5))
+                    love.graphics.setColor(1, 0, 0)
+                    love.graphics.printf(Tabella[i][j], cellX, cellY + cellSize * 0.25, cellSize, "center")
                 end
             end
-
-            if StadioGioco > 0 then
-                love.graphics.setColor(1, 0, 0)
-                love.graphics.setLineWidth(5)
-
-                if StadioGioco >= 10 and StadioGioco < 20 then -- Row win
-                    local row = StadioGioco - 10
-                    love.graphics.line(offsetX, offsetY + row * cellSize + cellSize / 2, offsetX + tableSize,
-                        offsetY + row * cellSize + cellSize / 2)
-                elseif StadioGioco >= 20 and StadioGioco < 30 then -- Column win
-                    local col = StadioGioco - 20
-                    love.graphics.line(offsetX + col * cellSize + cellSize / 2, offsetY,
-                        offsetX + col * cellSize + cellSize / 2, offsetY + tableSize)
-                elseif StadioGioco == 31 then -- Diagonal win
-                    love.graphics.line(offsetX, offsetY, offsetX + tableSize, offsetY + tableSize)
-                elseif StadioGioco == 32 then
-                    love.graphics.line(offsetX + tableSize, offsetY, offsetX, offsetY + tableSize)
-                end
-            end
-        elseif SchedaSelezionata == "Online" then
+        end
+        if SchedaSelezionata == "Online" then
 
         end
-    end
-    if StadioGioco ~= 0 then
-        local buttonSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08 -- Slightly smaller
+        if StadioGioco > 0 then
+            love.graphics.setColor(1, 0, 0)
+            love.graphics.setLineWidth(5)
 
-        local restartX = love.graphics.getWidth() * 0.02
-        local restartY = love.graphics.getHeight() * 0.02
-        love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(),
-            buttonSize / IconaRestart:getHeight())
+            if StadioGioco >= 10 and StadioGioco < 20 then     -- Row win
+                local row = StadioGioco - 10
+                love.graphics.line(offsetX, offsetY + row * cellSize + cellSize / 2, offsetX + tableSize,
+                    offsetY + row * cellSize + cellSize / 2)
+            elseif StadioGioco >= 20 and StadioGioco < 30 then     -- Column win
+                local col = StadioGioco - 20
+                love.graphics.line(offsetX + col * cellSize + cellSize / 2, offsetY,
+                    offsetX + col * cellSize + cellSize / 2, offsetY + tableSize)
+            elseif StadioGioco == 31 then     -- Diagonal win
+                love.graphics.line(offsetX, offsetY, offsetX + tableSize, offsetY + tableSize)
+            elseif StadioGioco == 32 then
+                love.graphics.line(offsetX + tableSize, offsetY, offsetX, offsetY + tableSize)
+            end
+        end
+        if StadioGioco ~= 0 then
+            local buttonSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08 -- Slightly smaller
 
-        local exitX = love.graphics.getWidth() - buttonSize - love.graphics.getWidth() * 0.02
-        local exitY = restartY
+            local restartX = love.graphics.getWidth() * 0.02
+            local restartY = love.graphics.getHeight() * 0.02
+            love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(), buttonSize / IconaRestart:getHeight())
 
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.setLineWidth(4)
-        love.graphics.line(exitX + buttonSize * 0.1, exitY + buttonSize * 0.1, exitX + buttonSize * 0.9,
-            exitY + buttonSize * 0.9)                                                                                              -- Diagonal line /
-        love.graphics.line(exitX + buttonSize * 0.9, exitY + buttonSize * 0.1, exitX + buttonSize * 0.1,
-            exitY + buttonSize * 0.9)                                                                                              -- Diagonal line \
+            local exitX = love.graphics.getWidth() - buttonSize - love.graphics.getWidth() * 0.02
+            local exitY = restartY
+
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.setLineWidth(4)
+            love.graphics.line(exitX + buttonSize * 0.1, exitY + buttonSize * 0.1, exitX + buttonSize * 0.9, exitY + buttonSize * 0.9)
+            love.graphics.line(exitX + buttonSize * 0.9, exitY + buttonSize * 0.1, exitX + buttonSize * 0.1, exitY + buttonSize * 0.9)
+        end
     end
 end
