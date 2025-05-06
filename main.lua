@@ -121,8 +121,10 @@ function love.keypressed(key)
                 SchedaSelezionata = Menu[MenuScelta]
             end
         end
-    elseif SchedaSelezionata == "Crediti" and key == "escape" then
+    elseif SchedaSelezionata ~= "Menu" and key == "escape" then
         SchedaSelezionata = "Menu"
+        ResetGame()
+        Debbuging("INFO", "Tornato al menu principale")
         love.window.setTitle("Tris")
     end
 end
@@ -227,19 +229,9 @@ function love.mousepressed(x, y, button)
         local restartX = love.graphics.getWidth() * 0.02
         local restartY = love.graphics.getHeight() * 0.02
 
-        if button == 1 and x >= restartX and x <= restartX + restartSize and y >= restartY and y <= restartY + restartSize then
+        if x >= restartX and x <= restartX + restartSize and y >= restartY and y <= restartY + restartSize then
             ResetGame()
             Debbuging("INFO", "Partita resettata!")
-        end
-
-        local exitSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.1
-        local exitX = love.graphics.getWidth() * 0.95 - exitSize
-        local exitY = love.graphics.getHeight() * 0.02
-
-        if x >= exitX and x <= exitX + exitSize and y >= exitY and y <= exitY + exitSize then
-            SchedaSelezionata = "Menu"
-            ResetGame()
-            Debbuging("INFO", "Tornato al menu principale")
         end
     end
 end
@@ -341,14 +333,6 @@ function love.draw()
             local restartX = love.graphics.getWidth() * 0.02
             local restartY = love.graphics.getHeight() * 0.02
             love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(), buttonSize / IconaRestart:getHeight())
-
-            local exitX = love.graphics.getWidth() - buttonSize - love.graphics.getWidth() * 0.02
-            local exitY = restartY
-
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.setLineWidth(4)
-            love.graphics.line(exitX + buttonSize * 0.1, exitY + buttonSize * 0.1, exitX + buttonSize * 0.9, exitY + buttonSize * 0.9)
-            love.graphics.line(exitX + buttonSize * 0.9, exitY + buttonSize * 0.1, exitX + buttonSize * 0.1, exitY + buttonSize * 0.9)
         end
     end
 end
