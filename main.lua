@@ -6,7 +6,6 @@ ffi.cdef [[
     int mossaComputer(char board[3][3]);
 ]]
 local Backend = ffi.load("Back-end\\Back.dll")
-local Msg
 
 local musicTracks = {}
 local currentTrack = 1
@@ -17,10 +16,21 @@ local Tabella = {
     { ' ', ' ', ' ' },
     { ' ', ' ', ' ' }
 }
-local SchedaSelezionata = "Menu"
 
 local Menu = { "SinglePlayer", "MultiPlayer", "Crediti", "Exit" }
 local MenuScelta = 1
+local SchedaSelezionata = "Menu"
+
+local BarraVolume = {
+    x = 100,
+    y = 200,
+    width = 300,
+    height = 10,
+    knobX = 250,
+    knobWidth = 20,
+    value = 0.5,
+    dragging = false
+}
 
 local StadioGioco = 0
 local Partita = 1
@@ -54,14 +64,25 @@ end
 function love.load()
     love.window.setTitle("Tris")
     love.window.setIcon(love.image.newImageData("Resources/Icon/Tris_icon.png"))
-    love.graphics.setFont(love.graphics.newFont(20))
-    IconaRestart = love.graphics.newImage("Resources/Game_Buttons/Restart.png")
 
+    --Fonts
+    love.graphics.setFont(love.graphics.newFont(20))
+
+    --Foto
+    IconaRestart = love.graphics.newImage("Resources/Game_Buttons/Restart.png")
+    IconaImpostazioni = love.graphics.newImage("Resources/Game_Buttons/Config.png")
+
+    --Musica
     for _, file in ipairs(love.filesystem.getDirectoryItems("Resources/Music")) do
         if file:match("%.ogg$") or file:match("%.mp3$") then
             table.insert(musicTracks, "Resources/Music/" .. file)
         end
     end
+
+    --Suoni
+    Selezione = love.audio.newSource("Resources/SoundEffects/Select.mp3", "stream")
+    Selezione:setLooping(false)
+    Selezione:setVolume(0.09)
 
     Debbuging("START", "Gioco avviato con successo, buon divertimento!")
 end
@@ -71,7 +92,14 @@ function love.quit()
 end
 
 function love.update(dt)
-    if music and music:isPlaying() and musicTracks[1] then return end
+    if BarraVolume.dragging then
+        local mouseX = love.mouse.getX()
+        BarraVolume.knobX = math.max(BarraVolume.x, math.min(mouseX, BarraVolume.x + BarraVolume.width - BarraVolume.knobWidth))
+        BarraVolume.value = (BarraVolume.knobX - BarraVolume.x) / (BarraVolume.width - BarraVolume.knobWidth)
+        music:setVolume(BarraVolume.value)
+    end
+    
+    if music and music:isPlaying() then return end
 
     local success, newMusic = pcall(love.audio.newSource, musicTracks[currentTrack], "stream")
     if success then
@@ -101,6 +129,7 @@ function love.keypressed(key)
                 MenuScelta = #Menu
             end
         elseif key == "return" then
+            local Msg
             if Menu[MenuScelta] == "SinglePlayer" then
                 Msg = "Avvio SinglePlayer"
                 love.window.setTitle("Tris - SinglePlayer")
@@ -116,6 +145,7 @@ function love.keypressed(key)
             elseif Menu[MenuScelta] == "Exit" then
                 love.event.quit()
             end
+            Selezione:play()
             if Menu[MenuScelta] ~= "Exit" then
                 Debbuging("INFO", Msg)
                 SchedaSelezionata = Menu[MenuScelta]
@@ -130,7 +160,16 @@ function love.keypressed(key)
 end
 
 function love.mousepressed(x, y, button)
-    if button == 1 and SchedaSelezionata == "MultiPlayer" and StadioGioco == 0 then
+    if SchedaSelezionata == "Menu" then
+        local ImpostazioniSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10
+        local ImpostazioniX = love.graphics.getWidth() - ImpostazioniSize - love.graphics.getWidth() * 0.01
+        local ImpostazioniY = love.graphics.getHeight() * 0.01
+        if x >= ImpostazioniX and x <= ImpostazioniX + ImpostazioniSize and y >= ImpostazioniY and y <= ImpostazioniY + ImpostazioniSize then
+            Debbuging("INFO", "Visualizzazione delle impostazioni!")
+            love.window.setTitle("Tris - Impostazioni")
+            SchedaSelezionata = "Impostazioni"
+        end
+    elseif button == 1 and SchedaSelezionata == "MultiPlayer" and StadioGioco == 0 then
         local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
         local offsetX = (love.graphics.getWidth() - tableSize) / 2
         local offsetY = (love.graphics.getHeight() - tableSize) / 2
@@ -164,7 +203,7 @@ function love.mousepressed(x, y, button)
                 Debbuging("INFO", "Partita finita col pareggio!")
             end
         end
-        if Giocatore == 1 then Giocatore = 2 else Giocatore = 1 end
+        Giocatore = (Giocatore == 1) and 2 or 1
 
     elseif button == 1 and SchedaSelezionata == "SinglePlayer" and StadioGioco == 0 then
         local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
@@ -203,7 +242,7 @@ function love.mousepressed(x, y, button)
                 end
             end
     
-            -- CPU Move only if game isn't over
+            -- CPU Move
             if StadioGioco == 0 then
                 local Casella = Backend.mossaComputer(Tabella_Lua_C(Tabella))
                 local Xcord = math.floor(Casella / 3) + 1
@@ -233,6 +272,16 @@ function love.mousepressed(x, y, button)
             ResetGame()
             Debbuging("INFO", "Partita resettata!")
         end
+    elseif button == 1 and SchedaSelezionata == "Impostazioni" then
+        if  x >= BarraVolume.knobX and x <= BarraVolume.knobX + BarraVolume.knobWidth and y >= BarraVolume.y - 5 and y <= BarraVolume.y + BarraVolume.height + 5 then
+            BarraVolume.dragging = true
+        end
+    end
+end
+
+function love.mousereleased(x, y, button)
+    if button == 1 then
+        BarraVolume.dragging = false
     end
 end
 
@@ -261,6 +310,11 @@ function love.draw()
             local menuY = menuStartY + (i - 1) * menuSpacing
             love.graphics.printf(Scelta, 0, menuY, love.graphics.getWidth(), "center")
         end
+        local ImpostazioniSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10
+        local ImpostazioniX = love.graphics.getWidth() - ImpostazioniSize - love.graphics.getWidth() * 0.01
+        local ImpostazioniY = love.graphics.getHeight() * 0.01
+
+        love.graphics.draw(IconaImpostazioni, ImpostazioniX, ImpostazioniY, 0, ImpostazioniSize / IconaImpostazioni:getWidth(), ImpostazioniSize / IconaImpostazioni:getHeight())
     elseif SchedaSelezionata == "Crediti" then
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28))
@@ -284,6 +338,21 @@ function love.draw()
         for i, line in ipairs(Testo) do
             love.graphics.printf(line, 0, 100 + i * 30, love.graphics.getWidth(), "center")
         end
+    elseif SchedaSelezionata == "Impostazioni" then
+        local titleFontSize = love.graphics.getHeight() * 0.1
+        local titleY = love.graphics.getHeight() * 0.08
+        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Impostazioni", 0, titleY, love.graphics.getWidth(), "center")
+
+        love.graphics.setColor(0.5, 0.5, 0.5)
+        love.graphics.rectangle("fill", BarraVolume.x, BarraVolume.y, BarraVolume.width, BarraVolume.height)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.rectangle("fill", BarraVolume.knobX, BarraVolume.y - 5, BarraVolume.knobWidth, BarraVolume.height + 10)
+
+        love.graphics.setFont(love.graphics.newFont(20))
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print("Volume: " .. math.floor(BarraVolume.value * 100) .. "%", BarraVolume.x, BarraVolume.y - 30)
     else
         local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
         local offsetX = (love.graphics.getWidth() - tableSize) / 2
