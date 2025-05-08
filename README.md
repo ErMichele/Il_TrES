@@ -1,69 +1,64 @@
-# **IL TRIS - Alpha Release**  
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ErMichele/Tris/main/Resources/Icon/Tris_icon.png" alt="Tris Icon" width="150">
-</p>
+# IL TRIS  
+**Alpha v0.3.0 | Built with LÖVE2D + Custom C Backend**  
 
-### **A Tic-Tac-Toe Game Built in LÖVE2D with C Backend**
-
-Welcome to **IL TRIS**, a tic-tac-toe game powered by **LÖVE2D** and a custom C-based backend! This release sets the foundation for a competitive, dynamic gameplay experience. The **Local Multiplayer Mode** is fully functional, while the **Single Player AI** is currently in development.
+Welcome to **IL TRIS**, a fast, clean, and tactical take on classic Tic-Tac-Toe, developed using **LÖVE2D** and a custom **C-based backend**.  
+This project aims to blend a familiar game with polished UI, responsive input, and strategic depth — and it’s just getting started.  
 
 ---
 
-## **Features**
-✔ **Local Multiplayer Mode** – Play with a friend and see instant board updates.  
-✔ **Interactive UI** – Intuitive game navigation, structured logic, and smooth controls.  
-✔ **Exit Button** – Easily return to the menu at any time.  
-✔ **Logging System** – Every action, move, and game result is stored in a log file.  
+## **New in v0.3.0 Alpha**  
+This version brings major updates to gameplay and user experience:  
+
+✅ **🤖 Single Player Mode** – Battle against an AI opponent with solid tactical logic.  
+✅ **🎵 Background Music** – Smooth soundtrack adds ambiance to each match.  
+✅ **⚙ Settings Tab** – Adjust music and sound effect volume from the in-game menu.  
+✅ **🔊 Sound Effects** – Light audio cues for actions and interactions.  
 
 ---
 
-## **Upcoming Features**
-🔄 **Single Player Mode** – AI opponent will be introduced soon.  
-🎨 **Visual Enhancements** – Better UI and animations for a smoother experience.  
-🎵 **Background Music Support** – A soundtrack to enhance the gameplay atmosphere.  
-🌍 **Online Multiplayer** – Future networking support for competitive play.  
+## **Core Features**  
+✔ **Local Multiplayer Mode** – Face off against a friend on the same device.  
+✔ **Smooth UI/UX** – Streamlined menu system and game logic.  
+✔ **Logging System** – All moves and victories are recorded in the `Logs` folder.  
+✔ **Restart & Exit Controls** – Easily reset a game or return to the main menu.  
 
 ---
 
-## **Installation & Running the Game**
-### **Option 1: Running the `.love` File**
-1️⃣ Install [Love2D](https://love2d.org).  
-2️⃣ Download the **IL TRIS .love file**.  
-3️⃣ Open the file using Love2D (`love IL_TRIS.love`).  
-
-### **Option 2: Running the Executable**
-1️⃣ Download the latest **Windows `.exe` release** (if packaged).  
-2️⃣ Extract the game files into a folder.  
-3️⃣ Run `IL_TRIS.exe` and enjoy!  
-
----
-
-## **How to Play**
-🎮 Navigate the **menu system** to select a mode.  
-🎮 Click on **grid cells** in **MultiPlayer Mode** to place marks dynamically.  
-🎮 Press **"X" in the corner** to return to the menu at any time.  
-🎮 Use the **restart button** if needed.  
-🎮 Check the **Logs folder** for stored game actions.  
+## **How to Play**  
+1️⃣ Install **LÖVE2D** on your system.  
+2️⃣ Download and extract the game files from the repository.  
+3️⃣ Launch the game by running the `.love` file (or packaged `.exe`).  
+4️⃣ Select a game mode:  
+   - **Local Multiplayer**  
+   - **Single Player (vs AI)**  
+5️⃣ Click on grid cells to place your move.  
+6️⃣ Use the **Settings** tab to adjust audio preferences.  
+7️⃣ Review game logs in the `Logs` folder for gameplay history.  
 
 ---
 
-## **Future Development Goals**
-🚀 **Implement AI for Single Player Mode**  
-🎨 **Enhance UI & Add Animations**  
-🔧 **Improve Game Performance**  
+## **Planned Features**  
+🌐 **Online Multiplayer**  
+🎨 **Enhanced Animations and UI Visuals**  
+⚡ **Performance Optimizations**  
 
 ---
 
-## **Feedback & Contributions**
-If you encounter bugs, have suggestions, or want to contribute, feel free to **open an issue on GitHub**! Any feedback is valuable in shaping the future of **IL TRIS**.  
+## **Download & Contribute**  
+**GitHub Repository:**  
+[🔗 GitHub - TRIS](https://github.com/ErMichele/Tris)  
 
-🔗 **GitHub Repository:** [ErMichele/Tris](https://github.com/ErMichele/Tris)  
-
----
-
-## **License**
-This project is licensed under **MIT License**, allowing open-source contributions and modifications.
+Want to report a bug, suggest a feature, or contribute? **Fork the repo** or **open an issue**!  
 
 ---
 
-### **Enjoy the game!** 🚀🎮
+## **Join the Community**  
+**Discord Server:**  
+[🔗 Join our Discord](https://discord.gg/yourserverinvite)  
+
+Chat with the developer, suggest ideas, report bugs, or just hang out!  
+
+---
+
+## **License**  
+This project is released under the **Apache-2.0 license**. See `LICENSE` for details.  
