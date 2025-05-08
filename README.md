@@ -46,7 +46,7 @@ This version brings major updates to gameplay and user experience:
 
 ## **Download & Contribute**  
 **GitHub Repository:**  
-[🔗 GitHub - TRIS](https://github.com/ErMichele/Tris)  
+[🔗 GitHub - Il TrES](https://github.com/ErMichele/Tris)  
 
 Want to report a bug, suggest a feature, or contribute? **Fork the repo** or **open an issue**!  
 
