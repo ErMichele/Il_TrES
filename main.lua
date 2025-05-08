@@ -62,7 +62,7 @@ function Debbuging(Tipo, Msg)
 end
 
 function love.load()
-    love.window.setTitle("Tris")
+    love.window.setTitle("TrES")
     love.window.setIcon(love.image.newImageData("Resources/Icon/Tris_icon.png"))
 
     --Fonts
@@ -132,16 +132,16 @@ function love.keypressed(key)
             local Msg
             if Menu[MenuScelta] == "SinglePlayer" then
                 Msg = "Avvio SinglePlayer"
-                love.window.setTitle("Tris - SinglePlayer")
+                love.window.setTitle("TrES - SinglePlayer")
             elseif Menu[MenuScelta] == "MultiPlayer" then
                 Msg = "Avvio MultiPlayer"
-                love.window.setTitle("Tris - MultiPlayer")
+                love.window.setTitle("TrES - MultiPlayer")
             elseif Menu[MenuScelta] == "Online" then
                 Msg = "Avvio Online (Ancora da aggiungere)!"
-                love.window.setTitle("Tris - Online")
+                love.window.setTitle("TrES - Online")
             elseif Menu[MenuScelta] == "Crediti" then
                 Msg = "Visualizzazione dei crediti"
-                love.window.setTitle("Tris - Crediti")
+                love.window.setTitle("TrES - Crediti")
             elseif Menu[MenuScelta] == "Exit" then
                 love.event.quit()
             end
@@ -155,7 +155,7 @@ function love.keypressed(key)
         SchedaSelezionata = "Menu"
         ResetGame()
         Debbuging("INFO", "Tornato al menu principale")
-        love.window.setTitle("Tris")
+        love.window.setTitle("TrES")
     end
 end
 
@@ -166,7 +166,7 @@ function love.mousepressed(x, y, button)
         local ImpostazioniY = love.graphics.getHeight() * 0.01
         if x >= ImpostazioniX and x <= ImpostazioniX + ImpostazioniSize and y >= ImpostazioniY and y <= ImpostazioniY + ImpostazioniSize then
             Debbuging("INFO", "Visualizzazione delle impostazioni!")
-            love.window.setTitle("Tris - Impostazioni")
+            love.window.setTitle("TrES - Impostazioni")
             SchedaSelezionata = "Impostazioni"
         end
     elseif button == 1 and SchedaSelezionata == "MultiPlayer" and StadioGioco == 0 then
@@ -293,7 +293,7 @@ function love.draw()
         local titleY = love.graphics.getHeight() * 0.1
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
         love.graphics.setColor(1, 1, 1)
-        love.graphics.printf("IL TRIS", 0, titleY, love.graphics.getWidth(), "center")
+        love.graphics.printf("Il TrES", 0, titleY, love.graphics.getWidth(), "center")
 
         local menuFontSize = love.graphics.getHeight() * 0.05
         local menuStartY = love.graphics.getHeight() * 0.3
@@ -320,7 +320,7 @@ function love.draw()
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28))
     
         local Testo = {
-            "IL TRIS - Crediti",
+            "Il TrES - Crediti",
             "",
             "Owner: ErMichele",
             "",

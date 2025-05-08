@@ -1,7 +1,7 @@
-# IL TRIS  
+# Il TrES  
 **Alpha v0.3.0 | Built with LÖVE2D + Custom C Backend**  
 
-Welcome to **IL TRIS**, a fast, clean, and tactical take on classic Tic-Tac-Toe, developed using **LÖVE2D** and a custom **C-based backend**.  
+Welcome to **Il TrES**, a fast, clean, and tactical take on classic Tic-Tac-Toe, developed using **LÖVE2D** and a custom **C-based backend**.  
 This project aims to blend a familiar game with polished UI, responsive input, and strategic depth — and it’s just getting started.  
 
 ---
@@ -25,15 +25,15 @@ This version brings major updates to gameplay and user experience:
 ---
 
 ## **How to Play**  
-1️⃣ Install **LÖVE2D** on your system.  
-2️⃣ Download and extract the game files from the repository.  
-3️⃣ Launch the game by running the `.love` file (or packaged `.exe`).  
-4️⃣ Select a game mode:  
-   - **Local Multiplayer**  
-   - **Single Player (vs AI)**  
-5️⃣ Click on grid cells to place your move.  
-6️⃣ Use the **Settings** tab to adjust audio preferences.  
-7️⃣ Review game logs in the `Logs` folder for gameplay history.  
+1️. Install **LÖVE2D** on your system.  
+2️. Download and extract the game files from the repository.  
+3️. Launch the game by running the `.love` file (or packaged `.exe`).  
+4️. Select a game mode:  
+    - **Local Multiplayer**  
+    - **Single Player (vs AI)**  
+5️. Click on grid cells to place your move.  
+6️. Use the **Settings** tab to adjust audio preferences.  
+7️. Review game logs in the `Logs` folder for gameplay history.  
 
 ---
 
