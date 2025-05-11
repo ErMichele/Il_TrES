@@ -211,13 +211,18 @@ unsigned long long Fattoriale(int n) {
  * @return double The calculated value of the sine.
  */
 double Sen(double angolo) {
+    // Riduzione modulo 2π
+    while (angolo > Pi) angolo -= 2 * Pi;
+    while (angolo < -Pi) angolo += 2 * Pi;
+
     double risultato = 0.0;
-    for (int i = 0; i < 10; i++) { 
+    for (int i = 0; i < 15; i++) {
         int segno = (i % 2 == 0) ? 1 : -1;
         risultato += segno * Potenza(angolo, 2 * i + 1) / Fattoriale(2 * i + 1);
     }
     return risultato;
 }
+
 
 /**
  * @brief Computes the cosine of an angle (in radians) using the Taylor series.
@@ -226,8 +231,12 @@ double Sen(double angolo) {
  * @return double The calculated value of the cosine.
  */
 double Cos(double angolo) {
+    // Riduzione modulo 2π
+    while (angolo > Pi) angolo -= 2 * Pi;
+    while (angolo < -Pi) angolo += 2 * Pi;
+
     double risultato = 0.0;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 15; i++) {
         int segno = (i % 2 == 0) ? 1 : -1;
         risultato += segno * Potenza(angolo, 2 * i) / Fattoriale(2 * i);
     }
@@ -240,13 +249,15 @@ double Cos(double angolo) {
  * @param angolo Angle in radians.
  * @return double The calculated value of the tangent.
  */
-double Tan(double angolo, char Unità) {
+double Tan(double angolo) {
     double seno = Sen(angolo);
     double coseno = Cos(angolo);
-    if (angolo <= 0) {
-        printf("Errore: l'angolo deve essere un numero positivo.\n");
+
+    if ((coseno > 0 && coseno < 1e-8) || (coseno < 0 && -coseno < 1e-8)) {
+        printf("Errore: tangente indefinita per angolo = %.6f rad\n", angolo);
         return -1;
     }
+
     return seno / coseno;
 }
 
