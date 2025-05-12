@@ -3,7 +3,7 @@ ffi.cdef [[
     int Pareggio(char Tavola[3][3]);
     int Vittoria(char Tavola[3][3]);
     void Log(const char *Tipo, const char *Messaggio);
-    int mossaComputer(char board[3][3]);
+    int MossaCPU(char board[3][3]);
 ]]
 local Backend = ffi.load("Back-end\\Back.dll")
 
@@ -244,7 +244,7 @@ function love.mousepressed(x, y, button)
     
             -- CPU Move
             if StadioGioco == 0 then
-                local Casella = Backend.mossaComputer(Tabella_Lua_C(Tabella))
+                local Casella = Backend.MossaCPU(Tabella_Lua_C(Tabella))
                 local Xcord = math.floor(Casella / 3) + 1
                 local Ycord = (Casella % 3) + 1
                 Tabella[Xcord][Ycord] = 'O'
@@ -328,7 +328,7 @@ function love.draw()
             "Linguaggio: Lua + C (DLL)",
             "",
             "Coder: ErMichele",
-            "Music: LolYeahTheBest e Apothesis", 
+            "Music: LolYeahTheBest e Apothesis",
             "",
             "Grazie per aver giocato!",
             "",

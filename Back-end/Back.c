@@ -1,6 +1,4 @@
 #include "Michele.h"
-#include <stdlib.h>
-#include <time.h>
 
 __declspec(dllexport) int Vittoria(char Tavola[3][3]) {
     for (int Riga = 0; Riga < 3; Riga++) {
@@ -32,7 +30,7 @@ __declspec(dllexport) void Log(const char *Tipo, const char *Messaggio) {
     Logging(Tipo, Messaggio);
 }
 
-int trova_mossa_vincente(char board[3][3], char simbolo) {
+int Trova_mossa_vincente(char board[3][3], char simbolo) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (board[i][j] == ' ') {
@@ -48,13 +46,13 @@ int trova_mossa_vincente(char board[3][3], char simbolo) {
     return -1;
 }
 
-__declspec(dllexport) int mossaComputer(char board[3][3]) {
+__declspec(dllexport) int MossaCPU(char board[3][3]) {
     int move;
 
-    move = trova_mossa_vincente(board, 'O');
+    move = Trova_mossa_vincente(board, 'O');
     if (move != -1) return move;
 
-    move = trova_mossa_vincente(board, 'X');
+    move = Trova_mossa_vincente(board, 'X');
     if (move != -1) return move;
 
     if (board[1][1] == ' ') return 1 * 3 + 1;
@@ -73,5 +71,5 @@ __declspec(dllexport) int mossaComputer(char board[3][3]) {
         return available[r];
     }
 
-    return -1; // Shouldn't happen
+    return -1; // Non dovrebbe accadere
 }
