@@ -18,18 +18,32 @@ local Tabella = {
 }
 
 local Menu = { "SinglePlayer", "MultiPlayer", "Crediti", "Exit" }
-local MenuScelta = 1
 local SchedaSelezionata = "Menu"
+local MenuScelta = 1
 
-local BarraVolume = {
+local Barra_Volume_Musica = {
     x = 100,
     y = 200,
-    width = 300,
-    height = 10,
-    knobX = 250,
-    knobWidth = 20,
+    Larghezza = 300,
+    Altezza = 10,
+    Punto_X = 250,
+    Punto_Lato = 20,
     value = 0.5,
-    dragging = false
+    Usato = false
+}
+
+local Tasto_Restart = {
+    Dimensione = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08,
+    x = love.graphics.getWidth() * 0.02,
+    y = love.graphics.getHeight() * 0.02,
+    Icona = love.graphics.newImage("Resources/Game_Buttons/Restart.png")
+}
+
+local Tasto_Impostazioni = {
+    Dimensione = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10,
+    x = love.graphics.getWidth() - Tasto_Impostazioni.Dimensione - love.graphics.getWidth() * 0.01,
+    y = love.graphics.getHeight() * 0.01,
+    Icona = love.graphics.newImage("Resources/Game_Buttons/Config.png")
 }
 
 local StadioGioco = 0
@@ -68,10 +82,6 @@ function love.load()
     --Fonts
     love.graphics.setFont(love.graphics.newFont(20))
 
-    --Foto
-    IconaRestart = love.graphics.newImage("Resources/Game_Buttons/Restart.png")
-    IconaImpostazioni = love.graphics.newImage("Resources/Game_Buttons/Config.png")
-
     --Musica
     for _, file in ipairs(love.filesystem.getDirectoryItems("Resources/Music")) do
         if file:match("%.ogg$") or file:match("%.mp3$") then
@@ -92,11 +102,10 @@ function love.quit()
 end
 
 function love.update(dt)
-    if BarraVolume.dragging then
+    if Barra_Volume_Musica.Usato then
         local mouseX = love.mouse.getX()
-        BarraVolume.knobX = math.max(BarraVolume.x, math.min(mouseX, BarraVolume.x + BarraVolume.width - BarraVolume.knobWidth))
-        BarraVolume.value = (BarraVolume.knobX - BarraVolume.x) / (BarraVolume.width - BarraVolume.knobWidth)
-        music:setVolume(BarraVolume.value)
+        Barra_Volume_Musica.Punto_X = math.max(Barra_Volume_Musica.x, math.min(mouseX, Barra_Volume_Musica.x + Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
+        music:setVolume((Barra_Volume_Musica.Punto_X - Barra_Volume_Musica.x) / (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
     end
     
     if music and music:isPlaying() then return end
@@ -161,10 +170,7 @@ end
 
 function love.mousepressed(x, y, button)
     if SchedaSelezionata == "Menu" then
-        local ImpostazioniSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10
-        local ImpostazioniX = love.graphics.getWidth() - ImpostazioniSize - love.graphics.getWidth() * 0.01
-        local ImpostazioniY = love.graphics.getHeight() * 0.01
-        if x >= ImpostazioniX and x <= ImpostazioniX + ImpostazioniSize and y >= ImpostazioniY and y <= ImpostazioniY + ImpostazioniSize then
+        if x >= Tasto_Impostazioni.x and x <= Tasto_Impostazioni.x + Tasto_Impostazioni.Dimensione and y >= Tasto_Impostazioni.y and y <= Tasto_Impostazioni.y + Tasto_Impostazioni.Dimensione then
             Debbuging("INFO", "Visualizzazione delle impostazioni!")
             love.window.setTitle("TrES - Impostazioni")
             SchedaSelezionata = "Impostazioni"
@@ -264,23 +270,19 @@ function love.mousepressed(x, y, button)
             end
         end
     elseif button == 1 and StadioGioco ~= 0 then
-        local restartSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.1
-        local restartX = love.graphics.getWidth() * 0.02
-        local restartY = love.graphics.getHeight() * 0.02
-
-        if x >= restartX and x <= restartX + restartSize and y >= restartY and y <= restartY + restartSize then
+        if x >= Tasto_Restart.x and x <= Tasto_Restart.x + Tasto_Restart.Dimensione and y >= Tasto_Restart.y and y <= Tasto_Restart.y + Tasto_Restart.Dimensione then
             ResetGame()
             Debbuging("INFO", "Partita resettata!")
         end
     elseif button == 1 and SchedaSelezionata == "Impostazioni" then
-        if  x >= BarraVolume.knobX and x <= BarraVolume.knobX + BarraVolume.knobWidth and y >= BarraVolume.y - 5 and y <= BarraVolume.y + BarraVolume.height + 5 then
+        if  x >= Barra_Volume_Musica.Punto_X and x <= Barra_Volume_Musica.Punto_X + Barra_Volume_Musica.Punto_Lato and y >= Barra_Volume_Musica.y - 5 and y <= Barra_Volume_Musica.y + Barra_Volume_Musica.Altezza + 5 then
             BarraVolume.dragging = true
         end
     end
 end
 
 function love.mousereleased(x, y, button)
-    if button == 1 then
+    if button == 1 and BarraVolume.dragging then
         BarraVolume.dragging = false
     end
 end
@@ -310,11 +312,8 @@ function love.draw()
             local menuY = menuStartY + (i - 1) * menuSpacing
             love.graphics.printf(Scelta, 0, menuY, love.graphics.getWidth(), "center")
         end
-        local ImpostazioniSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10
-        local ImpostazioniX = love.graphics.getWidth() - ImpostazioniSize - love.graphics.getWidth() * 0.01
-        local ImpostazioniY = love.graphics.getHeight() * 0.01
 
-        love.graphics.draw(IconaImpostazioni, ImpostazioniX, ImpostazioniY, 0, ImpostazioniSize / IconaImpostazioni:getWidth(), ImpostazioniSize / IconaImpostazioni:getHeight())
+        love.graphics.draw(Tasto_Impostazioni.Icona, Tasto_Impostazioni.x, Tasto_Impostazioni.y, 0, Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getWidth(), Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getHeight())
     elseif SchedaSelezionata == "Crediti" then
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28))
@@ -346,9 +345,9 @@ function love.draw()
         love.graphics.printf("Impostazioni", 0, titleY, love.graphics.getWidth(), "center")
 
         love.graphics.setColor(0.5, 0.5, 0.5)
-        love.graphics.rectangle("fill", BarraVolume.x, BarraVolume.y, BarraVolume.width, BarraVolume.height)
+        love.graphics.rectangle("fill", Barra_Volume_Musica.x, Barra_Volume_Musica.y, Barra_Volume_Musica.Larghezza, Barra_Volume_Musica.Altezza)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("fill", BarraVolume.knobX, BarraVolume.y - 5, BarraVolume.knobWidth, BarraVolume.height + 10)
+        love.graphics.rectangle("fill", Barra_Volume_Musica.Punto_X, Barra_Volume_Musica.y - 5, Barra_Volume_Musica.Punto_Lato, Barra_Volume_Musica.Altezza + 10)
 
         love.graphics.setFont(love.graphics.newFont(20))
         love.graphics.setColor(1, 1, 1)
@@ -397,11 +396,19 @@ function love.draw()
             end
         end
         if StadioGioco ~= 0 then
-            local buttonSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.08 -- Slightly smaller
-
-            local restartX = love.graphics.getWidth() * 0.02
-            local restartY = love.graphics.getHeight() * 0.02
-            love.graphics.draw(IconaRestart, restartX, restartY, 0, buttonSize / IconaRestart:getWidth(), buttonSize / IconaRestart:getHeight())
+            love.graphics.draw(Tasto_Restart.Icona, Tasto_Restart.x, Tasto_Restart.y, 0, Tasto_Restart.Dimensione / Tasto_Restart.Icona:getWidth(), Tasto_Restart.Dimensione / Tasto_Restart.Icona:getHeight())
         end
     end
+end
+
+function love.resize (w, h)
+    --Tasto del reset delle partite
+    Tasto_Restart.Dimensione = math.min(w, h) * 0.08
+    Tasto_Restart.x = w * 0.02
+    Tasto_Restart.y = h * 0.02
+
+    --Tasto delle impostazioni
+    Tasto_Impostazioni.Dimensione = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10
+    Tasto_Impostazioni.x = love.graphics.getWidth() - Tasto_Impostazioni.Dimensione - love.graphics.getWidth() * 0.01
+    Tasto_Impostazioni.y = love.graphics.getHeight() * 0.01
 end
