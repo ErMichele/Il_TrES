@@ -7,9 +7,9 @@ ffi.cdef [[
 ]]
 local Backend = ffi.load("Back-end\\Back.dll")
 
-local musicTracks = {}
-local currentTrack = 1
-local music
+local Traccie_Background = {}
+local Traccia_Background_Corrente = 1
+local Musica_Background
 
 local Tabella = {
     { ' ', ' ', ' ' },
@@ -28,7 +28,7 @@ local Barra_Volume_Musica = {
     Altezza = 10,
     Punto_X = 250,
     Punto_Lato = 20,
-    value = 0.5,
+    Valore = 0.5,
     Usato = false
 }
 
@@ -41,15 +41,26 @@ local Tasto_Restart = {
 
 local Tasto_Impostazioni = {
     Dimensione = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10,
-    x = love.graphics.getWidth() - Tasto_Impostazioni.Dimensione - love.graphics.getWidth() * 0.01,
+    x = love.graphics.getWidth() - math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10 -
+    love.graphics.getWidth() * 0.01,
     y = love.graphics.getHeight() * 0.01,
     Icona = love.graphics.newImage("Resources/Game_Buttons/Config.png")
+}
+
+local Tabella_Grafica = {
+    Dimensione = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6,
+    Offset_X = (love.graphics.getWidth() - math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6) / 2,
+    Offset_Y = (love.graphics.getHeight() - math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6) / 2,
+    Dimensione_Cella = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6 / 3
 }
 
 local StadioGioco = 0
 local Partita = 1
 local Giocatore = 1
 
+--- Convert Lua table to C array for FFI interaction.
+--- @param Tavola table Lua table representing the game board.
+--- @return table CArray representing the game board.
 function Tabella_Lua_C(Tavola)
     local CArray = ffi.new("char[3][3]")
     for i = 1, 3 do
@@ -70,9 +81,37 @@ function ResetGame()
     Giocatore = 1
 end
 
+--- Logs a message to the console and the backend (if available).
+--- @param Tipo string  The type of message (e.g., "INFO", "DEBUG", "ERROR").
+--- @param Msg  string The message to log.
 function Debbuging(Tipo, Msg)
     print("[" .. Tipo .. "] " .. Msg)
-    Backend.Log(Tipo, Msg)
+    if Backend then
+        Backend.Log(Tipo, Msg)
+    end
+end
+
+--- Esegue una mossa nella cella cliccata, e controlla vittoria/pareggio
+--- @param Riga number
+--- @param Colonna number
+--- @param Simbolo string 'X' o 'O'
+function EseguiMossa(Riga, Colonna, Simbolo)
+    Tabella[Riga][Colonna] = Simbolo
+    local risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
+    if risultato ~= 0 then
+        StadioGioco = risultato
+        Debbuging("INFO", "Il giocatore '" .. Simbolo .. "' ha vinto con risultato = " .. StadioGioco .. "!")
+        return true
+    end
+
+    risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
+    if risultato == -1 then
+        StadioGioco = risultato
+        Debbuging("INFO", "Partita finita col pareggio!")
+        return true
+    end
+
+    return false
 end
 
 function love.load()
@@ -85,7 +124,7 @@ function love.load()
     --Musica
     for _, file in ipairs(love.filesystem.getDirectoryItems("Resources/Music")) do
         if file:match("%.ogg$") or file:match("%.mp3$") then
-            table.insert(musicTracks, "Resources/Music/" .. file)
+            table.insert(Traccie_Background, "Resources/Music/" .. file)
         end
     end
 
@@ -104,25 +143,28 @@ end
 function love.update(dt)
     if Barra_Volume_Musica.Usato then
         local mouseX = love.mouse.getX()
-        Barra_Volume_Musica.Punto_X = math.max(Barra_Volume_Musica.x, math.min(mouseX, Barra_Volume_Musica.x + Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
-        music:setVolume((Barra_Volume_Musica.Punto_X - Barra_Volume_Musica.x) / (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
+        Barra_Volume_Musica.Punto_X = math.max(Barra_Volume_Musica.x,
+            math.min(mouseX, Barra_Volume_Musica.x + Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
+        Barra_Volume_Musica.Valore = (Barra_Volume_Musica.Punto_X - Barra_Volume_Musica.x) /
+        (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato)
+        Musica_Background:setVolume(Barra_Volume_Musica.Valore)
     end
-    
-    if music and music:isPlaying() then return end
 
-    local success, newMusic = pcall(love.audio.newSource, musicTracks[currentTrack], "stream")
+    if Musica_Background and Musica_Background:isPlaying() then return end
+
+    local success, newMusic = pcall(love.audio.newSource, Traccie_Background[Traccia_Background_Corrente], "stream")
     if success then
-        music = newMusic
-        music:setLooping(false)
-        music:play()
-        Debbuging("DEBUG", "Avviato la esecuzione di " .. musicTracks[currentTrack] .. "!")
+        Musica_Background = newMusic
+        Musica_Background:setLooping(false)
+        Musica_Background:play()
+        Debbuging("DEBUG", "Avviato la esecuzione di " .. Traccie_Background[Traccia_Background_Corrente] .. "!")
     else
-        if musicTracks[currentTrack] ~= nil then
-            Debbuging("ERRORE", musicTracks[currentTrack] .. " non può essere caricato!")
+        if Traccie_Background[Traccia_Background_Corrente] ~= nil then
+            Debbuging("ERRORE", Traccie_Background[Traccia_Background_Corrente] .. " non può essere caricato!")
         end
     end
 
-    currentTrack = (currentTrack % #musicTracks) + 1
+    Traccia_Background_Corrente = (Traccia_Background_Corrente % #Traccie_Background) + 1
 end
 
 function love.keypressed(key)
@@ -175,98 +217,40 @@ function love.mousepressed(x, y, button)
             love.window.setTitle("TrES - Impostazioni")
             SchedaSelezionata = "Impostazioni"
         end
-    elseif button == 1 and SchedaSelezionata == "MultiPlayer" and StadioGioco == 0 then
-        local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
-        local offsetX = (love.graphics.getWidth() - tableSize) / 2
-        local offsetY = (love.graphics.getHeight() - tableSize) / 2
-        local cellSize = tableSize / 3
-
+    elseif button == 1 and (SchedaSelezionata == "SinglePlayer" or SchedaSelezionata == "MultiPlayer") and StadioGioco == 0 then
+        local mossaEseguita = false
         for Riga = 1, 3 do
             for Colonna = 1, 3 do
-                local cellX = offsetX + (Colonna - 1) * cellSize
-                local cellY = offsetY + (Riga - 1) * cellSize
+                local cellX = Tabella_Grafica.Offset_X + (Colonna - 1) * Tabella_Grafica.Dimensione_Cella
+                local cellY = Tabella_Grafica.Offset_Y + (Riga - 1) * Tabella_Grafica.Dimensione_Cella
 
-                if x >= cellX and x <= cellX + cellSize and y >= cellY and y <= cellY + cellSize then
+                if x >= cellX and x <= cellX + Tabella_Grafica.Dimensione_Cella and y >= cellY and y <= cellY + Tabella_Grafica.Dimensione_Cella then
                     if Tabella[Riga][Colonna] == ' ' then
-                        Debbuging("DEBUG", "Il giocatore " .. Giocatore .. " ha cliccato la casella: " .. Riga .. ", " .. Colonna)
-                        if Giocatore == 1 then
-                            Tabella[Riga][Colonna] = 'X'
-                        else
-                            Tabella[Riga][Colonna] = 'O'
+                        local simbolo = (SchedaSelezionata == "SinglePlayer" or Giocatore == 1) and 'X' or 'O'
+                        Debbuging("DEBUG",
+                            "Il giocatore ha cliccato la casella: " ..
+                            Riga .. ", " .. Colonna .. " con simbolo '" .. simbolo .. "'")
+                        mossaEseguita = true
+                        if EseguiMossa(Riga, Colonna, simbolo) then return end
+                        if SchedaSelezionata == "MultiPlayer" then
+                            Giocatore = (Giocatore == 1) and 2 or 1
                         end
                     end
                 end
             end
         end
-        local Risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
-        if Risultato ~= 0 then
-            StadioGioco = Risultato
-            Debbuging("INFO", "Giocatore " .. Giocatore .. " ha vinto con il risultato = " .. StadioGioco .. "!")
-        else
-            Risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
-            if Risultato == -1 then
-                StadioGioco = Risultato
-                Debbuging("INFO", "Partita finita col pareggio!")
-            end
-        end
-        Giocatore = (Giocatore == 1) and 2 or 1
 
-    elseif button == 1 and SchedaSelezionata == "SinglePlayer" and StadioGioco == 0 then
-        local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
-        local offsetX = (love.graphics.getWidth() - tableSize) / 2
-        local offsetY = (love.graphics.getHeight() - tableSize) / 2
-        local cellSize = tableSize / 3
-    
-        local mossaEseguita = false
-        for Riga = 1, 3 do
-            for Colonna = 1, 3 do
-                local cellX = offsetX + (Colonna - 1) * cellSize
-                local cellY = offsetY + (Riga - 1) * cellSize
-    
-                if x >= cellX and x <= cellX + cellSize and y >= cellY and y <= cellY + cellSize then
-                    if Tabella[Riga][Colonna] == ' ' then
-                        Debbuging("DEBUG", "Il giocatore ha cliccato la casella: " .. Riga .. ", " .. Colonna)
-                        Tabella[Riga][Colonna] = 'X'
-                        mossaEseguita = true
-                    end
-                end
-            end
-        end
-    
-        if mossaEseguita then
-            local risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
-            if risultato ~= 0 then
-                StadioGioco = risultato
-                Debbuging("INFO", "Il giocatore ha vinto con il risultato = " .. StadioGioco .. "!")
-                return
+        -- Mossa CPU (solo per SinglePlayer)
+        if mossaEseguita and SchedaSelezionata == "SinglePlayer" and StadioGioco == 0 then
+            local Casella = Backend.MossaCPU(Tabella_Lua_C(Tabella))
+            local Riga = math.floor(Casella / 3) + 1
+            local Colonna = (Casella % 3) + 1
+            if Tabella[Riga][Colonna] == ' ' then
+                Tabella[Riga][Colonna] = 'O'
+                Debbuging("DEBUG", "La CPU ha eseguito la mossa: " .. Riga .. ", " .. Colonna)
+                EseguiMossa(Riga, Colonna, 'O')
             else
-                risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
-                if risultato == -1 then
-                    StadioGioco = risultato
-                    Debbuging("INFO", "Partita finita col pareggio!")
-                    return
-                end
-            end
-    
-            -- CPU Move
-            if StadioGioco == 0 then
-                local Casella = Backend.MossaCPU(Tabella_Lua_C(Tabella))
-                local Xcord = math.floor(Casella / 3) + 1
-                local Ycord = (Casella % 3) + 1
-                Tabella[Xcord][Ycord] = 'O'
-                Debbuging("DEBUG", "La CPU ha eseguito la seguente mossa: " .. Xcord .. ", " .. Ycord .. "!")
-    
-                risultato = Backend.Vittoria(Tabella_Lua_C(Tabella))
-                if risultato ~= 0 then
-                    StadioGioco = risultato
-                    Debbuging("INFO", "La CPU ha vinto con il risultato = " .. StadioGioco .. "!")
-                else
-                    risultato = Backend.Pareggio(Tabella_Lua_C(Tabella))
-                    if risultato == -1 then
-                        StadioGioco = risultato
-                        Debbuging("INFO", "Partita finita col pareggio!")
-                    end
-                end
+                Debbuging("ERRORE", "La CPU ha scelto una casella occupata: " .. Riga .. ", " .. Colonna)
             end
         end
     elseif button == 1 and StadioGioco ~= 0 then
@@ -275,15 +259,15 @@ function love.mousepressed(x, y, button)
             Debbuging("INFO", "Partita resettata!")
         end
     elseif button == 1 and SchedaSelezionata == "Impostazioni" then
-        if  x >= Barra_Volume_Musica.Punto_X and x <= Barra_Volume_Musica.Punto_X + Barra_Volume_Musica.Punto_Lato and y >= Barra_Volume_Musica.y - 5 and y <= Barra_Volume_Musica.y + Barra_Volume_Musica.Altezza + 5 then
-            BarraVolume.dragging = true
+        if x >= Barra_Volume_Musica.Punto_X and x <= Barra_Volume_Musica.Punto_X + Barra_Volume_Musica.Punto_Lato and y >= Barra_Volume_Musica.y - 5 and y <= Barra_Volume_Musica.y + Barra_Volume_Musica.Altezza + 5 then
+            Barra_Volume_Musica.Usato = true
         end
     end
 end
 
 function love.mousereleased(x, y, button)
-    if button == 1 and BarraVolume.dragging then
-        BarraVolume.dragging = false
+    if button == 1 and Barra_Volume_Musica.Usato then
+        Barra_Volume_Musica.Usato = false
     end
 end
 
@@ -313,11 +297,13 @@ function love.draw()
             love.graphics.printf(Scelta, 0, menuY, love.graphics.getWidth(), "center")
         end
 
-        love.graphics.draw(Tasto_Impostazioni.Icona, Tasto_Impostazioni.x, Tasto_Impostazioni.y, 0, Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getWidth(), Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getHeight())
+        love.graphics.draw(Tasto_Impostazioni.Icona, Tasto_Impostazioni.x, Tasto_Impostazioni.y, 0,
+            Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getWidth(),
+            Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getHeight())
     elseif SchedaSelezionata == "Crediti" then
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28))
-    
+
         local Testo = {
             "Il TrES - Crediti",
             "",
@@ -333,7 +319,7 @@ function love.draw()
             "",
             "Premi [Esc] per tornare al menu"
         }
-    
+
         for i, line in ipairs(Testo) do
             love.graphics.printf(line, 0, 100 + i * 30, love.graphics.getWidth(), "center")
         end
@@ -345,35 +331,42 @@ function love.draw()
         love.graphics.printf("Impostazioni", 0, titleY, love.graphics.getWidth(), "center")
 
         love.graphics.setColor(0.5, 0.5, 0.5)
-        love.graphics.rectangle("fill", Barra_Volume_Musica.x, Barra_Volume_Musica.y, Barra_Volume_Musica.Larghezza, Barra_Volume_Musica.Altezza)
+        love.graphics.rectangle("fill", Barra_Volume_Musica.x, Barra_Volume_Musica.y, Barra_Volume_Musica.Larghezza,
+            Barra_Volume_Musica.Altezza)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("fill", Barra_Volume_Musica.Punto_X, Barra_Volume_Musica.y - 5, Barra_Volume_Musica.Punto_Lato, Barra_Volume_Musica.Altezza + 10)
+        love.graphics.rectangle("fill", Barra_Volume_Musica.Punto_X, Barra_Volume_Musica.y - 5,
+            Barra_Volume_Musica.Punto_Lato, Barra_Volume_Musica.Altezza + 10)
 
         love.graphics.setFont(love.graphics.newFont(20))
         love.graphics.setColor(1, 1, 1)
-        love.graphics.print("Volume: " .. math.floor(BarraVolume.value * 100) .. "%", BarraVolume.x, BarraVolume.y - 30)
+        love.graphics.print("Volume: " .. math.floor(Barra_Volume_Musica.Valore * 100) .. "%", Barra_Volume_Musica.x,
+            Barra_Volume_Musica.y - 30)
     else
-        local tableSize = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6
-        local offsetX = (love.graphics.getWidth() - tableSize) / 2
-        local offsetY = (love.graphics.getHeight() - tableSize) / 2
-        local cellSize = tableSize / 3
-
         love.graphics.setColor(1, 1, 1)
         love.graphics.setLineWidth(2)
-        love.graphics.line(offsetX + cellSize, offsetY, offsetX + cellSize, offsetY + tableSize)
-        love.graphics.line(offsetX + 2 * cellSize, offsetY, offsetX + 2 * cellSize, offsetY + tableSize)
-        love.graphics.line(offsetX, offsetY + cellSize, offsetX + tableSize, offsetY + cellSize)
-        love.graphics.line(offsetX, offsetY + 2 * cellSize, offsetX + tableSize, offsetY + 2 * cellSize)
+        love.graphics.line(Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
+            Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella,
+            Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
+        love.graphics.line(Tabella_Grafica.Offset_X + 2 * Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
+            Tabella_Grafica.Offset_X + 2 * Tabella_Grafica.Dimensione_Cella,
+            Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
+        love.graphics.line(Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione_Cella,
+            Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
+            Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione_Cella)
+        love.graphics.line(Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y + 2 * Tabella_Grafica.Dimensione_Cella,
+            Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
+            Tabella_Grafica.Offset_Y + 2 * Tabella_Grafica.Dimensione_Cella)
 
         -- Draw player marks dynamically
         for i = 1, 3 do
             for j = 1, 3 do
-                local cellX = offsetX + (j - 1) * cellSize
-                local cellY = offsetY + (i - 1) * cellSize
+                local cellX = Tabella_Grafica.Offset_X + (j - 1) * Tabella_Grafica.Dimensione_Cella
+                local cellY = Tabella_Grafica.Offset_Y + (i - 1) * Tabella_Grafica.Dimensione_Cella
                 if Tabella[i][j] ~= ' ' then
-                    love.graphics.setFont(love.graphics.newFont(cellSize * 0.5))
+                    love.graphics.setFont(love.graphics.newFont(Tabella_Grafica.Dimensione_Cella * 0.5))
                     love.graphics.setColor(1, 0, 0)
-                    love.graphics.printf(Tabella[i][j], cellX, cellY + cellSize * 0.25, cellSize, "center")
+                    love.graphics.printf(Tabella[i][j], cellX, cellY + Tabella_Grafica.Dimensione_Cella * 0.25,
+                        Tabella_Grafica.Dimensione_Cella, "center")
                 end
             end
         end
@@ -381,34 +374,51 @@ function love.draw()
             love.graphics.setColor(1, 0, 0)
             love.graphics.setLineWidth(5)
 
-            if StadioGioco >= 10 and StadioGioco < 20 then     -- Row win
+            if StadioGioco >= 10 and StadioGioco < 20 then -- Row win
                 local row = StadioGioco - 10
-                love.graphics.line(offsetX, offsetY + row * cellSize + cellSize / 2, offsetX + tableSize,
-                    offsetY + row * cellSize + cellSize / 2)
-            elseif StadioGioco >= 20 and StadioGioco < 30 then     -- Column win
+                love.graphics.line(Tabella_Grafica.Offset_X,
+                    Tabella_Grafica.Offset_Y + row * Tabella_Grafica.Dimensione_Cella +
+                    Tabella_Grafica.Dimensione_Cella / 2, Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
+                    Tabella_Grafica.Offset_Y + row * Tabella_Grafica.Dimensione_Cella +
+                    Tabella_Grafica.Dimensione_Cella / 2)
+            elseif StadioGioco >= 20 and StadioGioco < 30 then -- Column win
                 local col = StadioGioco - 20
-                love.graphics.line(offsetX + col * cellSize + cellSize / 2, offsetY,
-                    offsetX + col * cellSize + cellSize / 2, offsetY + tableSize)
-            elseif StadioGioco == 31 then     -- Diagonal win
-                love.graphics.line(offsetX, offsetY, offsetX + tableSize, offsetY + tableSize)
+                love.graphics.line(
+                    Tabella_Grafica.Offset_X + col * Tabella_Grafica.Dimensione_Cella +
+                    Tabella_Grafica.Dimensione_Cella / 2, Tabella_Grafica.Offset_Y,
+                    Tabella_Grafica.Offset_X + col * Tabella_Grafica.Dimensione_Cella +
+                    Tabella_Grafica.Dimensione_Cella / 2, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
+            elseif StadioGioco == 31 then -- Diagonal win
+                love.graphics.line(Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y,
+                    Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
+                    Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
             elseif StadioGioco == 32 then
-                love.graphics.line(offsetX + tableSize, offsetY, offsetX, offsetY + tableSize)
+                love.graphics.line(Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione, Tabella_Grafica.Offset_Y,
+                    Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
             end
         end
         if StadioGioco ~= 0 then
-            love.graphics.draw(Tasto_Restart.Icona, Tasto_Restart.x, Tasto_Restart.y, 0, Tasto_Restart.Dimensione / Tasto_Restart.Icona:getWidth(), Tasto_Restart.Dimensione / Tasto_Restart.Icona:getHeight())
+            love.graphics.draw(Tasto_Restart.Icona, Tasto_Restart.x, Tasto_Restart.y, 0,
+                Tasto_Restart.Dimensione / Tasto_Restart.Icona:getWidth(),
+                Tasto_Restart.Dimensione / Tasto_Restart.Icona:getHeight())
         end
     end
 end
 
-function love.resize (w, h)
+function love.resize(w, h)
     --Tasto del reset delle partite
     Tasto_Restart.Dimensione = math.min(w, h) * 0.08
     Tasto_Restart.x = w * 0.02
     Tasto_Restart.y = h * 0.02
 
     --Tasto delle impostazioni
-    Tasto_Impostazioni.Dimensione = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.10
-    Tasto_Impostazioni.x = love.graphics.getWidth() - Tasto_Impostazioni.Dimensione - love.graphics.getWidth() * 0.01
-    Tasto_Impostazioni.y = love.graphics.getHeight() * 0.01
+    Tasto_Impostazioni.Dimensione = math.min(w, h) * 0.10
+    Tasto_Impostazioni.x = w - Tasto_Impostazioni.Dimensione - w * 0.01
+    Tasto_Impostazioni.y = h * 0.01
+
+    --Tabella Grafica
+    Tabella_Grafica.Dimensione = math.min(w, h) * 0.6
+    Tabella_Grafica.Offset_X = (w - Tabella_Grafica.Dimensione) / 2
+    Tabella_Grafica.Offset_Y = (h - Tabella_Grafica.Dimensione) / 2
+    Tabella_Grafica.Dimensione_Cella = Tabella_Grafica.Dimensione / 3
 end
