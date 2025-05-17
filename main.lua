@@ -22,12 +22,12 @@ local SchedaSelezionata = "Menu"
 local MenuScelta = 1
 
 local Barra_Volume_Musica = {
-    x = 100,
-    y = 200,
-    Larghezza = 300,
-    Altezza = 10,
-    Punto_X = 250,
-    Punto_Lato = 20,
+    x = love.graphics.getWidth() * 0.125,
+    y = love.graphics.getHeight() * 0.3333333333333333333333333333333,
+    Larghezza = love.graphics.getWidth() * 0.375,
+    Altezza = math.max(4, love.graphics.getHeight() * 0.016666666666667),
+    Punto_Lato = math.max(10, love.graphics.getHeight() * 0.025),
+    Punto_X = nil,--Preparato in love.load()
     Valore = 0.5,
     Usato = false
 }
@@ -117,11 +117,11 @@ end
 function love.load()
     love.window.setTitle("TrES")
     love.window.setIcon(love.image.newImageData("Resources/Icon/Tris_icon.png"))
-
     --Fonts
     love.graphics.setFont(love.graphics.newFont(20))
 
     --Musica
+    Barra_Volume_Musica.Punto_X = Barra_Volume_Musica.x + (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato) * Barra_Volume_Musica.Valore
     for _, file in ipairs(love.filesystem.getDirectoryItems("Resources/Music")) do
         if file:match("%.ogg$") or file:match("%.mp3$") then
             table.insert(Traccie_Background, "Resources/Music/" .. file)
@@ -421,4 +421,12 @@ function love.resize(w, h)
     Tabella_Grafica.Offset_X = (w - Tabella_Grafica.Dimensione) / 2
     Tabella_Grafica.Offset_Y = (h - Tabella_Grafica.Dimensione) / 2
     Tabella_Grafica.Dimensione_Cella = Tabella_Grafica.Dimensione / 3
+
+    -- Barra Volume Musica
+    Barra_Volume_Musica.x = w * 0.125
+    Barra_Volume_Musica.y = h * 0.3333333333333333333333333333333
+    Barra_Volume_Musica.Larghezza = w * 0.375
+    Barra_Volume_Musica.Altezza = math.max(4, h * 0.016666666666667)
+    Barra_Volume_Musica.Punto_Lato = math.max(10, h * 0.025)
+    Barra_Volume_Musica.Punto_X = Barra_Volume_Musica.x + (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato) * Barra_Volume_Musica.Valore
 end
