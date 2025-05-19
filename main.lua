@@ -69,6 +69,7 @@ local Tabella_Grafica = {
 local StadioGioco = 0
 -- Giocatore corrente (1 o 2).
 local Giocatore = 1
+local Partita = 1
 
 --- Converte la tabella Lua in un array C per l'interazione FFI.
 --- @param tavola table Tabella Lua che rappresenta la tavola di gioco.
@@ -241,6 +242,7 @@ function love.keypressed(key)
     elseif SchedaSelezionata ~= "Menu" and key == "escape" then
         SchedaSelezionata = "Menu"
         ResetGame()
+        Partita = 1
         Debbuging("INFO", "Tornato al menu principale")
         love.window.setTitle("TrES")
     end
@@ -300,6 +302,7 @@ function love.mousepressed(x, y, button)
         if x >= Tasto_Restart.x and x <= Tasto_Restart.x + Tasto_Restart.Dimensione and
             y >= Tasto_Restart.y and y <= Tasto_Restart.y + Tasto_Restart.Dimensione then
             ResetGame()
+            Partita = Partita + 1
             Debbuging("INFO", "Partita resettata!")
         end
     elseif button == 1 and SchedaSelezionata == "Impostazioni" then
@@ -389,6 +392,11 @@ function love.draw()
         love.graphics.print("Volume: " .. math.floor(Barra_Volume_Musica.Valore * 100) .. "%", Barra_Volume_Musica.x,
             Barra_Volume_Musica.y - 30)
     else
+        local titleFontSize = love.graphics.getHeight() * 0.1
+        local titleY = love.graphics.getHeight() * 0.09
+        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Partita: " .. Partita, 0, titleY, love.graphics.getWidth(), "center")
         love.graphics.setColor(1, 1, 1)
         love.graphics.setLineWidth(2)
         love.graphics.line(Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
