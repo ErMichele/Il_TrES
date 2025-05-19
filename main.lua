@@ -397,7 +397,14 @@ function love.draw()
         love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
         love.graphics.setColor(1, 1, 1)
         love.graphics.printf("Partita: " .. Partita, 0, titleY, love.graphics.getWidth(), "center")
-        love.graphics.setColor(1, 1, 1)
+        
+        if SchedaSelezionata == "MultiPlayer" then
+            local titleFontSize = love.graphics.getHeight() * 0.085
+            local titleY = love.graphics.getHeight() * 0.8
+            love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.printf("Giocatore: " .. Giocatore, 0, titleY, love.graphics.getWidth(), "center")
+        end
         love.graphics.setLineWidth(2)
         love.graphics.line(Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
             Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella,
