@@ -7,25 +7,27 @@ ffi.cdef [[
 ]]
 local Backend = ffi.load("Back-end\\Back.dll")
 
--- Tabella per contenere le tracce musicali di sottofondo.
 local Traccie_Background = {}
--- Indice della traccia attualmente in riproduzione.
 local Traccia_Background_Corrente = 1
--- Sorgente audio Love2D per la musica di sottofondo.
 local Musica_Background
 
--- Tavola di gioco rappresentata come una tabella Lua 2D.
 local Tabella = {
     { ' ', ' ', ' ' },
     { ' ', ' ', ' ' },
     { ' ', ' ', ' ' }
 }
 
--- Opzioni del menu principale.
+local Fonts = {
+    Titolo = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", love.graphics.getHeight() * 0.1),
+    Menu = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", love.graphics.getHeight() * 0.05),
+    Crediti = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28),
+    Giocatore = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", love.graphics.getHeight() * 0.085),
+    Tavola = love.graphics.newFont(math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6 / 3 * 0.5),
+    Testo = love.graphics.newFont(20)
+}
+
 local Menu = { "SinglePlayer", "MultiPlayer", "Crediti", "Exit" }
--- Schermata del menu attualmente selezionata.
 local SchedaSelezionata = "Menu"
--- Indice dell'opzione del menu attualmente selezionata.
 local MenuScelta = 1
 
 -- Proprietà della barra del volume.
@@ -65,9 +67,7 @@ local Tabella_Grafica = {
     Dimensione_Cella = math.min(love.graphics.getWidth(), love.graphics.getHeight()) * 0.6 / 3
 }
 
--- Variabile di stato del gioco (0: in corso, >0: vittoria, -1: pareggio).
 local StadioGioco = 0
--- Giocatore corrente (1 o 2).
 local Giocatore = 1
 local Partita = 1
 
@@ -168,7 +168,7 @@ end
 
 --- Chiamato quando si esce dal gioco.
 function love.quit()
-    Debbuging("CLOSE", "Il gioco è stato chiuso.")
+    Debbuging("CLOSE", "Il gioco e' stato chiuso.")
 end
 
 --- Chiamato ogni frame. Aggiorna la logica del gioco.
@@ -193,6 +193,7 @@ function love.update(dt)
             Musica_Background = newMusic
             Musica_Background:setLooping(false)
             Musica_Background:play()
+            Musica_Background:setVolume(Barra_Volume_Musica.Valore)
             Debbuging("DEBUG", "Avviato l'esecuzione di " .. Traccie_Background[Traccia_Background_Corrente] .. "!")
         else
             if Traccie_Background[Traccia_Background_Corrente] ~= nil then
@@ -325,34 +326,28 @@ function love.draw()
     love.graphics.clear(0.68, 0.85, 0.9)
 
     if SchedaSelezionata == "Menu" then
-        local titleFontSize = love.graphics.getHeight() * 0.1
-        local titleY = love.graphics.getHeight() * 0.1
-        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
+        love.graphics.setFont(Fonts.Titolo)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.printf("Il TrES", 0, titleY, love.graphics.getWidth(), "center")
+        love.graphics.printf("Il TrES", 0, love.graphics.getHeight() * 0.1, love.graphics.getWidth(), "center")
 
-        local menuFontSize = love.graphics.getHeight() * 0.05
         local menuStartY = love.graphics.getHeight() * 0.3
         local menuSpacing = love.graphics.getHeight() * 0.08
 
         for i, Scelta in ipairs(Menu) do
-            if i == MenuScelta then
-                love.graphics.setColor(1, 1, 0)
-            else
-                love.graphics.setColor(0.7, 0.5, 0)
-            end
-
-            love.graphics.setFont(love.graphics.newFont(menuFontSize))
+            love.graphics.setFont(Fonts.Menu)
+            love.graphics.setColor(i == MenuScelta and 1 or 0.7, i == MenuScelta and 1 or 0.5, 0)
             local menuY = menuStartY + (i - 1) * menuSpacing
             love.graphics.printf(Scelta, 0, menuY, love.graphics.getWidth(), "center")
         end
 
+        love.graphics.setColor(1, 1, 1)
         love.graphics.draw(Tasto_Impostazioni.Icona, Tasto_Impostazioni.x, Tasto_Impostazioni.y, 0,
             Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getWidth(),
             Tasto_Impostazioni.Dimensione / Tasto_Impostazioni.Icona:getHeight())
+
     elseif SchedaSelezionata == "Crediti" then
+        love.graphics.setFont(Fonts.Crediti)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28))
 
         local Testo = {
             "Il TrES - Crediti",
@@ -373,84 +368,99 @@ function love.draw()
         for i, line in ipairs(Testo) do
             love.graphics.printf(line, 0, 100 + i * 30, love.graphics.getWidth(), "center")
         end
-    elseif SchedaSelezionata == "Impostazioni" then
-        local titleFontSize = love.graphics.getHeight() * 0.1
-        local titleY = love.graphics.getHeight() * 0.08
-        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.printf("Impostazioni", 0, titleY, love.graphics.getWidth(), "center")
 
+    elseif SchedaSelezionata == "Impostazioni" then
+        love.graphics.setFont(Fonts.Titolo)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Impostazioni", 0, love.graphics.getHeight() * 0.08, love.graphics.getWidth(), "center")
+
+        -- Barra volume
         love.graphics.setColor(0.5, 0.5, 0.5)
-        love.graphics.rectangle("fill", Barra_Volume_Musica.x, Barra_Volume_Musica.y, Barra_Volume_Musica.Larghezza,
-            Barra_Volume_Musica.Altezza)
+        love.graphics.rectangle("fill", Barra_Volume_Musica.x, Barra_Volume_Musica.y,
+            Barra_Volume_Musica.Larghezza, Barra_Volume_Musica.Altezza)
         love.graphics.setColor(1, 1, 1)
         love.graphics.rectangle("fill", Barra_Volume_Musica.Punto_X, Barra_Volume_Musica.y - 5,
             Barra_Volume_Musica.Punto_Lato, Barra_Volume_Musica.Altezza + 10)
 
-        love.graphics.setFont(love.graphics.newFont(20))
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.print("Volume: " .. math.floor(Barra_Volume_Musica.Valore * 100) .. "%", Barra_Volume_Musica.x,
-            Barra_Volume_Musica.y - 30)
-    else
-        local titleFontSize = love.graphics.getHeight() * 0.1
-        local titleY = love.graphics.getHeight() * 0.09
-        love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.printf("Partita: " .. Partita, 0, titleY, love.graphics.getWidth(), "center")
-        
-        if SchedaSelezionata == "MultiPlayer" then
-            local titleFontSize = love.graphics.getHeight() * 0.085
-            local titleY = love.graphics.getHeight() * 0.8
-            love.graphics.setFont(love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", titleFontSize))
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.printf("Giocatore: " .. Giocatore, 0, titleY, love.graphics.getWidth(), "center")
-        end
-        love.graphics.setLineWidth(2)
-        love.graphics.line(Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
-            Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione_Cella,
-            Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
-        love.graphics.line(Tabella_Grafica.Offset_X + 2 * Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
-            Tabella_Grafica.Offset_X + 2 * Tabella_Grafica.Dimensione_Cella,
-            Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
-        love.graphics.line(Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione_Cella,
-            Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
-            Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione_Cella)
-        love.graphics.line(Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y + 2 * Tabella_Grafica.Dimensione_Cella,
-            Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
-            Tabella_Grafica.Offset_Y + 2 * Tabella_Grafica.Dimensione_Cella)
+        love.graphics.setFont(Fonts.Testo)
+        love.graphics.print("Volume: " .. math.floor(Barra_Volume_Musica.Valore * 100) .. "%",
+            Barra_Volume_Musica.x, Barra_Volume_Musica.y - 30)
 
-        -- Disegna dinamicamente i simboli dei giocatori
-        for i = 1, 3 do
-            for j = 1, 3 do
-                local cellX = Tabella_Grafica.Offset_X + (j - 1) * Tabella_Grafica.Dimensione_Cella
-                local cellY = Tabella_Grafica.Offset_Y + (i - 1) * Tabella_Grafica.Dimensione_Cella
-                if Tabella[i][j] ~= ' ' then
-                    love.graphics.setFont(love.graphics.newFont(Tabella_Grafica.Dimensione_Cella * 0.5))
-                    love.graphics.setColor(1, 0, 0)
-                    love.graphics.printf(Tabella[i][j], cellX, cellY + Tabella_Grafica.Dimensione_Cella * 0.25,
-                        Tabella_Grafica.Dimensione_Cella, "center")
+    else
+        love.graphics.setFont(Fonts.Titolo)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Partita: " .. Partita, 0, love.graphics.getHeight() * 0.09, love.graphics.getWidth(), "center")
+
+        if SchedaSelezionata == "MultiPlayer" then
+            love.graphics.setFont(Fonts.Giocatore)
+            love.graphics.printf("Giocatore: " .. Giocatore, 0, love.graphics.getHeight() * 0.8, love.graphics.getWidth(), "center")
+        end
+
+        -- Griglia
+        love.graphics.setLineWidth(2)
+        for i = 1, 2 do
+            -- Linee verticali
+            love.graphics.line(
+                Tabella_Grafica.Offset_X + i * Tabella_Grafica.Dimensione_Cella, Tabella_Grafica.Offset_Y,
+                Tabella_Grafica.Offset_X + i * Tabella_Grafica.Dimensione_Cella,
+                Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione
+            )
+            -- Linee orizzontali
+            love.graphics.line(
+                Tabella_Grafica.Offset_X,
+                Tabella_Grafica.Offset_Y + i * Tabella_Grafica.Dimensione_Cella,
+                Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
+                Tabella_Grafica.Offset_Y + i * Tabella_Grafica.Dimensione_Cella
+            )
+        end
+
+        -- Simboli X e O grafici
+        for Riga = 1, 3 do
+            for Colonna = 1, 3 do
+                local Valore = Tabella[Riga][Colonna]
+                if Valore ~= ' ' then
+                    local cellX = Tabella_Grafica.Offset_X + (Colonna - 1) * Tabella_Grafica.Dimensione_Cella
+                    local cellY = Tabella_Grafica.Offset_Y + (Riga - 1) * Tabella_Grafica.Dimensione_Cella
+                    local padding = Tabella_Grafica.Dimensione_Cella * 0.2
+                    local size = Tabella_Grafica.Dimensione_Cella - padding * 2
+
+                    if Valore == 'X' then
+                        love.graphics.setColor(1, 0, 0)
+                        love.graphics.setLineWidth(4)
+                        love.graphics.line(cellX + padding, cellY + padding,
+                            cellX + padding + size, cellY + padding + size
+                        )
+                        love.graphics.line(
+                            cellX + padding + size, cellY + padding,
+                            cellX + padding, cellY + padding + size
+                        )
+                    elseif Valore == 'O' then
+                        love.graphics.setColor(0, 0, 1)
+                        love.graphics.setLineWidth(4)
+                        love.graphics.circle("line",
+                            cellX + Tabella_Grafica.Dimensione_Cella / 2,
+                            cellY + Tabella_Grafica.Dimensione_Cella / 2,
+                            size / 2
+                        )
+                    end
                 end
             end
         end
+
+        -- Linea di vittoria
         if StadioGioco > 0 then
-            love.graphics.setColor(1, 0, 0)
+            love.graphics.setColor(1, 1, 1)
             love.graphics.setLineWidth(5)
 
-            if StadioGioco >= 10 and StadioGioco < 20 then -- Vittoria per riga
+            if StadioGioco >= 10 and StadioGioco < 20 then
                 local row = StadioGioco - 10
-                love.graphics.line(Tabella_Grafica.Offset_X,
-                    Tabella_Grafica.Offset_Y + row * Tabella_Grafica.Dimensione_Cella +
-                    Tabella_Grafica.Dimensione_Cella / 2, Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
-                    Tabella_Grafica.Offset_Y + row * Tabella_Grafica.Dimensione_Cella +
-                    Tabella_Grafica.Dimensione_Cella / 2)
-            elseif StadioGioco >= 20 and StadioGioco < 30 then -- Vittoria per colonna
+                local y = Tabella_Grafica.Offset_Y + row * Tabella_Grafica.Dimensione_Cella + Tabella_Grafica.Dimensione_Cella / 2
+                love.graphics.line(Tabella_Grafica.Offset_X, y, Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione, y)
+            elseif StadioGioco >= 20 and StadioGioco < 30 then
                 local col = StadioGioco - 20
-                love.graphics.line(
-                    Tabella_Grafica.Offset_X + col * Tabella_Grafica.Dimensione_Cella +
-                    Tabella_Grafica.Dimensione_Cella / 2, Tabella_Grafica.Offset_Y,
-                    Tabella_Grafica.Offset_X + col * Tabella_Grafica.Dimensione_Cella +
-                    Tabella_Grafica.Dimensione_Cella / 2, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
-            elseif StadioGioco == 31 then -- VIttoria per diagonale
+                local x = Tabella_Grafica.Offset_X + col * Tabella_Grafica.Dimensione_Cella + Tabella_Grafica.Dimensione_Cella / 2
+                love.graphics.line(x, Tabella_Grafica.Offset_Y, x, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
+            elseif StadioGioco == 31 then
                 love.graphics.line(Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y,
                     Tabella_Grafica.Offset_X + Tabella_Grafica.Dimensione,
                     Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
@@ -459,13 +469,15 @@ function love.draw()
                     Tabella_Grafica.Offset_X, Tabella_Grafica.Offset_Y + Tabella_Grafica.Dimensione)
             end
         end
+
+        -- Tasto Restart
         if StadioGioco ~= 0 then
-            love.graphics.draw(Tasto_Restart.Icona, Tasto_Restart.x, Tasto_Restart.y, 0,
-                Tasto_Restart.Dimensione / Tasto_Restart.Icona:getWidth(),
-                Tasto_Restart.Dimensione / Tasto_Restart.Icona:getHeight())
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.draw(Tasto_Restart.Icona, Tasto_Restart.x, Tasto_Restart.y, 0, Tasto_Restart.Dimensione / Tasto_Restart.Icona:getWidth(),Tasto_Restart.Dimensione / Tasto_Restart.Icona:getHeight())
         end
     end
 end
+
 
 function love.resize(w, h)
     --Tasto del reset delle partite
@@ -484,11 +496,19 @@ function love.resize(w, h)
     Tabella_Grafica.Offset_Y = (h - Tabella_Grafica.Dimensione) / 2
     Tabella_Grafica.Dimensione_Cella = Tabella_Grafica.Dimensione / 3
 
-    -- Barra Volume Musica
+    --Barra Volume Musica
     Barra_Volume_Musica.x = w * 0.125
     Barra_Volume_Musica.y = h * 0.3333333333333333333333333333333
     Barra_Volume_Musica.Larghezza = w * 0.375
     Barra_Volume_Musica.Altezza = math.max(4, h * 0.016666666666667)
     Barra_Volume_Musica.Punto_Lato = math.max(10, h * 0.025)
     Barra_Volume_Musica.Punto_X = Barra_Volume_Musica.x + (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato) * Barra_Volume_Musica.Valore
+
+    --Fonts
+    Fonts.Titolo = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", h * 0.1)
+    Fonts.Menu = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", h * 0.05)
+    Fonts.Crediti = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", 28)
+    Fonts.Giocatore = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", h * 0.085)
+    Fonts.Tavola = love.graphics.newFont(math.min(w, h) * 0.6 / 3 * 0.5)
+    Fonts.Testo = love.graphics.newFont(20)
 end
