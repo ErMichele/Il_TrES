@@ -174,14 +174,14 @@ local function Esegui_Mossa(riga, colonna, simbolo)
     local risultato = Backend.Vittoria(Converti_Tabella_Lua_C(Tabella))
     if risultato ~= 0 then
         StatoGioco = risultato
-        Debug("INFO", GetLocalizedText("PlayerWon", simbolo, StatoGioco))
+        Debug("INFO", GetLocalizedText("Log_VittoriaGiocatore", simbolo, StatoGioco))
         return true
     end
 
     risultato = Backend.Pareggio(Converti_Tabella_Lua_C(Tabella))
     if risultato == -1 then
         StatoGioco = risultato
-        Debug("INFO", GetLocalizedText("Draw"))
+        Debug("INFO", GetLocalizedText("Log_Pareggio"))
         return true
     end
 
@@ -208,7 +208,7 @@ function love.load()
     if love.filesystem.getInfo("Barra_Volume_Musica.txt") then
         local Valore_Salvato = love.filesystem.read("Barra_Volume_Musica.txt")
         Barra_Volume_Musica.Valore = Valore_Salvato and tonumber(Valore_Salvato) or 0.5
-        Debug("DEBUG", GetLocalizedText("MusicSaveFound", math.floor(Barra_Volume_Musica.Valore * 100)))
+        Debug("DEBUG", GetLocalizedText("Log_SalvataggioMusicaTrovato", math.floor(Barra_Volume_Musica.Valore * 100)))
     else
         Barra_Volume_Musica.Valore = 0.5
         Debug("DEBUG", GetLocalizedText("NoMusicSaveFound", 0.5))
@@ -219,10 +219,10 @@ function love.load()
     if love.filesystem.getInfo("Barra_Volume_SFX.txt") then
         local Valore_Salvato_SFX = love.filesystem.read("Barra_Volume_SFX.txt")
         Barra_Volume_Effetti_Sonori.Valore = Valore_Salvato_SFX and tonumber(Valore_Salvato_SFX) or 0.5
-        Debug("DEBUG", GetLocalizedText("SFXSaveFound", math.floor(Barra_Volume_Effetti_Sonori.Valore * 100)))
+        Debug("DEBUG", GetLocalizedText("Log_SalvataggioSFXTrovato", math.floor(Barra_Volume_Effetti_Sonori.Valore * 100)))
     else
         Barra_Volume_Effetti_Sonori.Valore = 0.5
-        Debug("DEBUG", GetLocalizedText("NoSFXSaveFound", 0.5))
+        Debug("DEBUG", GetLocalizedText("Log_SalvataggioSFXNonTrovato", 0.5))
     end
     Barra_Volume_Effetti_Sonori.Punto_X = Barra_Volume_Effetti_Sonori.x + (Barra_Volume_Effetti_Sonori.Larghezza - Barra_Volume_Effetti_Sonori.Punto_Lato) * Barra_Volume_Effetti_Sonori.Valore
 
@@ -241,12 +241,12 @@ function love.load()
 
     love.window.setTitle(GetLocalizedText("Titolo"))
 
-    Debug("START", GetLocalizedText("GameStarted"))
+    Debug("START", GetLocalizedText("Log_GiocoAvviato"))
 end
 
 --- Chiamato quando si esce dal gioco.
 function love.quit()
-    Debug("CLOSE", GetLocalizedText("GameClosed"))
+    Debug("CLOSE", GetLocalizedText("Log_GiocoChiusa"))
 end
 
 --- Chiamato ogni frame. Aggiorna la logica del gioco.
@@ -269,7 +269,7 @@ function love.update(dt)
         Barra_Volume_Effetti_Sonori.Valore = (Barra_Volume_Effetti_Sonori.Punto_X - Barra_Volume_Effetti_Sonori.x) / (Barra_Volume_Effetti_Sonori.Larghezza - Barra_Volume_Effetti_Sonori.Punto_Lato)
         love.filesystem.write("Barra_Volume_SFX.txt", tostring(Barra_Volume_Effetti_Sonori.Valore))
         Effetti_Sonori.Selezione:setVolume(Barra_Volume_Effetti_Sonori.Valore)
-        Debug("DEBUG", GetLocalizedText("SFXVolumeSet", math.floor(Barra_Volume_Effetti_Sonori.Valore * 100)))
+        Debug("DEBUG", GetLocalizedText("Log_ModificaVolumeSFX", math.floor(Barra_Volume_Effetti_Sonori.Valore * 100)))
     end
 
     -- Gestione della musica di sottofondo.
@@ -283,7 +283,7 @@ function love.update(dt)
             Debug("DEBUG", "Avviato l'esecuzione di " .. Tracce_Sfondo[Traccia_Sfondo_Corrente] .. "!")
         else
             if Tracce_Sfondo[Traccia_Sfondo_Corrente] ~= nil then
-                Debug("ERRORE", GetLocalizedText("MusicLoadError", Tracce_Sfondo[Traccia_Sfondo_Corrente]))
+                Debug("ERRORE", GetLocalizedText("Log_ErroreMusicaCaricamento", Tracce_Sfondo[Traccia_Sfondo_Corrente]))
             end
         end
         Traccia_Sfondo_Corrente = (Traccia_Sfondo_Corrente % #Tracce_Sfondo) + 1
@@ -307,13 +307,13 @@ function love.keypressed(tasto)
         elseif tasto == "return" then
             local Messaggio
             if Menu[SceltaMenu] == "SinglePlayer" then
-                Messaggio = GetLocalizedText("StartSinglePlayer")
+                Messaggio = GetLocalizedText("Log_StartSingleplayer")
                 love.window.setTitle(GetLocalizedText("Titolo") .. " - " .. GetLocalizedText("SinglePlayer"))
             elseif Menu[SceltaMenu] == "MultiPlayer" then
-                Messaggio = GetLocalizedText("StartMultiPlayer")
+                Messaggio = GetLocalizedText("Log_StartMultiPlayer")
                 love.window.setTitle(GetLocalizedText("Titolo") .. " - " .. GetLocalizedText("MultiPlayer"))
             elseif Menu[SceltaMenu] == "Crediti" then
-                Messaggio = GetLocalizedText("ShowCredits")
+                Messaggio = GetLocalizedText("Log_MostraCrediti")
                 love.window.setTitle(GetLocalizedText("Titolo") .. " - " .. GetLocalizedText("Credits"))
             elseif Menu[SceltaMenu] == "Exit" then
                 love.event.quit()
@@ -348,7 +348,7 @@ function love.keypressed(tasto)
         SchedaSelezionata = "Menu"
         Resetta_Gioco()
         NumeroPartita = 1
-        Debug("INFO", GetLocalizedText("BackToMenu"))
+        Debug("INFO", GetLocalizedText("Log_RitornoMenu"))
         love.window.setTitle(GetLocalizedText("Titolo"))
     end
 end
@@ -360,7 +360,7 @@ end
 function love.mousepressed(x, y, pulsante)
     if SchedaSelezionata == "Menu" then
         if x >= Pulsante_Impostazioni.x and x <= Pulsante_Impostazioni.x + Pulsante_Impostazioni.Dimensione and y >= Pulsante_Impostazioni.y and y <= Pulsante_Impostazioni.y + Pulsante_Impostazioni.Dimensione then
-            Debug("INFO", GetLocalizedText("ShowSettings"))
+            Debug("INFO", GetLocalizedText("Log_MostraImpostanzioni"))
             love.window.setTitle(GetLocalizedText("Titolo") .. " - " .. GetLocalizedText("Impostazioni"))
             SchedaSelezionata = "Impostazioni"
         end
@@ -376,7 +376,7 @@ function love.mousepressed(x, y, pulsante)
                     y <= cellaY + Tabella_Grafica.Dimensione_Cella then
                     if Tabella[Riga][Colonna] == ' ' then
                         local simbolo = (SchedaSelezionata == "SinglePlayer" or GiocatoreCorrente == 1) and 'X' or 'O'
-                        Debug("DEBUG", GetLocalizedText("PlayerClicked", Riga, Colonna, simbolo))
+                        Debug("DEBUG", GetLocalizedText("Log_CasellaSceltaGiocatore", Riga, Colonna, simbolo))
                         mossaEseguita = true
                         if Esegui_Mossa(Riga, Colonna, simbolo) then
                             return
@@ -396,10 +396,10 @@ function love.mousepressed(x, y, pulsante)
             local Colonna = (Casella % 3) + 1
             if Tabella[Riga][Colonna] == ' ' then
                 Tabella[Riga][Colonna] = 'O'
-                Debug("DEBUG", GetLocalizedText("CPUMove", Riga, Colonna))
+                Debug("DEBUG", GetLocalizedText("Log_MossaCPU", Riga, Colonna))
                 Esegui_Mossa(Riga, Colonna, 'O')
             else
-                Debug("ERRORE", GetLocalizedText("CPUOccupied", Riga, Colonna))
+                Debug("ERRORE", GetLocalizedText("Log_CasellaOccupataCPU", Riga, Colonna))
             end
         end
     elseif pulsante == 1 and StatoGioco ~= 0 then
@@ -407,7 +407,7 @@ function love.mousepressed(x, y, pulsante)
             y >= Pulsante_Riavvio.y and y <= Pulsante_Riavvio.y + Pulsante_Riavvio.Dimensione then
             Resetta_Gioco()
             NumeroPartita = NumeroPartita + 1
-            Debug("INFO", GetLocalizedText("GameReset"))
+            Debug("INFO", GetLocalizedText("Log_ResetGioco"))
         end
     elseif pulsante == 1 and SchedaSelezionata == "Impostazioni" then
         -- Controllo click sulla barra del volume musica
@@ -490,11 +490,11 @@ function love.draw()
             GetLocalizedText("Crediti_Linguaggi"),
             "",
             GetLocalizedText("Crediti_Programmatore"),
-            GetLocalizedText("CreditsMusic"),
+            GetLocalizedText("Crediti_Musica"),
             "",
-            GetLocalizedText("CreditsThanks"),
+            GetLocalizedText("Crediti_Ringraziamenti"),
             "",
-            GetLocalizedText("CreditsPressEsc")
+            GetLocalizedText("Crediti_Uscita")
         }
 
         for i, line in ipairs(TestoCrediti) do
@@ -504,7 +504,7 @@ function love.draw()
     elseif SchedaSelezionata == "Impostazioni" then
         love.graphics.setFont(Fonts.Titolo.Carattere)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.printf(GetLocalizedText("SettingsTitle"), 0, love.graphics.getHeight() * 0.08, love.graphics.getWidth(), "center")
+        love.graphics.printf(GetLocalizedText("Impostazioni_Titolo"), 0, love.graphics.getHeight() * 0.08, love.graphics.getWidth(), "center")
 
         -- Sfondo rettangolare per il Volume Musica
         love.graphics.setColor(0.2, 0.2, 0.2, 0.8) -- Sfondo più scuro e semi-trasparente
@@ -542,7 +542,7 @@ function love.draw()
         love.graphics.setFont(Fonts.Testo.Carattere)
         love.graphics.setColor(1, 1, 1)
         -- Calcola la posizione per centrare il testo della lingua
-        local testoLingua = GetLocalizedText("Language") .. ": " .. Lingue[IndiceLinguaCorrente]
+        local testoLingua = GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente]
         local larghezzaTestoLingua = Fonts.Testo.Carattere:getWidth(testoLingua)
         local testoLinguaX = Opzione_Lingua.x + (Opzione_Lingua.Larghezza - larghezzaTestoLingua) / 2
         love.graphics.print(testoLingua, testoLinguaX, Opzione_Lingua.y - 30)
@@ -669,7 +669,7 @@ function love.resize(w, h)
     Opzione_Lingua.Dimensione_Freccia = math.max(20, h * 0.03)
 
     -- Calcola la posizione delle frecce rispetto al testo della lingua
-    local larghezzaTestoLingua = Fonts.Testo.Carattere:getWidth(GetLocalizedText("Language") .. ": " .. Lingue[IndiceLinguaCorrente])
+    local larghezzaTestoLingua = Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente])
     local inizioTestoLinguaX = Opzione_Lingua.x + (Opzione_Lingua.Larghezza - larghezzaTestoLingua) / 2
     Opzione_Lingua.Freccia_Sinistra_X = inizioTestoLinguaX - Opzione_Lingua.Dimensione_Freccia - 10 -- 10 pixel di padding
     Opzione_Lingua.Freccia_Destra_X = inizioTestoLinguaX + larghezzaTestoLingua + 10 -- 10 pixel di padding
