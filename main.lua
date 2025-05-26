@@ -98,12 +98,12 @@ local Barra_Volume_Effetti_Sonori = {
 -- Proprietà per l'opzione della lingua.
 local Opzione_Lingua = {
     x = love.graphics.getWidth() * 0.125,
-    y = love.graphics.getHeight() * 0.5666666666666667, -- Sotto il volume SFX
+    y = love.graphics.getHeight() * 0.5666666666666667,
     Larghezza = love.graphics.getWidth() * 0.375,
     Altezza = math.max(40, love.graphics.getHeight() * 0.05),
     Dimensione_Freccia = math.max(20, love.graphics.getHeight() * 0.03),
-    Freccia_Sinistra_X = nil,
-    Freccia_Destra_X = nil,
+    Freccia_Sinistra_X = love.graphics.getWidth() * 0.125 + (love.graphics.getWidth() * 0.375 - Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente])) / 2 - math.max(20, love.graphics.getHeight() * 0.03) - 10,
+    Freccia_Destra_X = love.graphics.getWidth() * 0.125 + (love.graphics.getWidth() * 0.375 - Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente])) / 2 + Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente]) + 10
 }
 
 -- Proprietà del pulsante di riavvio.
@@ -667,12 +667,8 @@ function love.resize(w, h)
     Opzione_Lingua.Larghezza = w * 0.375
     Opzione_Lingua.Altezza = math.max(40, h * 0.05)
     Opzione_Lingua.Dimensione_Freccia = math.max(20, h * 0.03)
-
-    -- Calcola la posizione delle frecce rispetto al testo della lingua
-    local larghezzaTestoLingua = Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente])
-    local inizioTestoLinguaX = Opzione_Lingua.x + (Opzione_Lingua.Larghezza - larghezzaTestoLingua) / 2
-    Opzione_Lingua.Freccia_Sinistra_X = inizioTestoLinguaX - Opzione_Lingua.Dimensione_Freccia - 10 -- 10 pixel di padding
-    Opzione_Lingua.Freccia_Destra_X = inizioTestoLinguaX + larghezzaTestoLingua + 10 -- 10 pixel di padding
+    Opzione_Lingua.Freccia_Sinistra_X = Opzione_Lingua.x + (Opzione_Lingua.Larghezza - Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente])) / 2 - Opzione_Lingua.Dimensione_Freccia - 10
+    Opzione_Lingua.Freccia_Destra_X = Opzione_Lingua.x + (Opzione_Lingua.Larghezza - Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente])) / 2 + Fonts.Testo.Carattere:getWidth(GetLocalizedText("Linguaggio") .. ": " .. Lingue[IndiceLinguaCorrente]) + 10
 
     --Fonts
     Fonts.Titolo.Carattere = love.graphics.newFont("Resources/Font/TimesNewRoman.ttf", h * 0.1)
