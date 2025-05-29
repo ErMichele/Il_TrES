@@ -192,7 +192,7 @@ end
 function love.load()
     love.filesystem.setIdentity("Il_TrES")
     love.window.setTitle(GetLocalizedText("Titolo"))
-    love.window.setIcon(love.image.newImageData("Resources/Icon/Tris_icon.png"))
+    love.window.setIcon(love.image.newImageData("Resources/Icon/TrES_icon(small).png", 32, 32))
 
     -- Carica le tracce musicali di sottofondo.
     for _, file in ipairs(love.filesystem.getDirectoryItems("Resources/Music")) do
