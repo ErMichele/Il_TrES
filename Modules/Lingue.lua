@@ -1,4 +1,4 @@
-return {
+local Testi = {
     Italiano = {
         Titolo = "Il TrES",
         SinglePlayer = "Giocatore Singolo",
@@ -41,6 +41,7 @@ return {
         Log_SalvataggioSFXNonTrovato = "Nessun file di salvataggio SFX trovato, volume predefinito: %.1f",
         Log_GiocoAvviato = "Gioco avviato con successo, buon divertimento!",
         Log_GiocoChiusa = "Il gioco e' stato chiuso.",
+        Abilita_Log = "Abilita Log",
         MissingLocalizationKey = "CHIAVE_LOCALIZZAZIONE_MANCANTE_%s",
     },
     English = {
@@ -85,6 +86,40 @@ return {
         Log_SalvataggioSFXNonTrovato = "No SFX save file found, default volume: %.1f",
         Log_GiocoAvviato = "Game started successfully, enjoy!",
         Log_GiocoChiusa = "The game has been closed.",
+        Abilita_Log = "Enable Log",
         MissingLocalizationKey = "MISSING_LOCALIZATION_KEY_%s",
     }
+}
+
+local Lingue = { "Italiano", "English" }
+local IndiceLinguaCorrente = 1
+
+function PrendiTesto(chiave, ...)
+    local linguaCorrente = Lingue[IndiceLinguaCorrente]
+    local testo = Testi[linguaCorrente][chiave]
+    if testo then
+        return string.format(testo, ...)
+    else
+        return string.format(Testi[linguaCorrente]["MissingLocalizationKey"], chiave)
+    end
+end
+
+function MettiLingua(index)
+    IndiceLinguaCorrente = index
+end
+
+function IndiceLIngua()
+    return IndiceLinguaCorrente
+end
+
+function PrendiLingua()
+    return Lingue[IndiceLinguaCorrente]
+end
+
+return {
+    PrendiTesto = PrendiTesto,
+    MettiLingua = MettiLingua,
+    IndiceLIngua = IndiceLIngua,
+    PrendiLingua = PrendiLingua,
+    Lingue = Lingue
 }
