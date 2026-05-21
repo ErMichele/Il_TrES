@@ -27,11 +27,11 @@ local function Debug(tipo, messaggio)
         for i = 9, 1, -1 do
             local oldName = logDir .. "log" .. i .. ".log"
             local newName = logDir .. "log" .. (i + 1) .. ".log"
-            if love.filesystem.exists(oldName) then
+            if love.filesystem.getInfo(oldName) then
                 love.filesystem.move(oldName, newName)
             end
         end
-        if love.filesystem.exists(logFilePath) then
+        if love.filesystem.getInfo(logFilePath) then
             love.filesystem.move(logFilePath, logDir .. "log1.log")
         end
     end

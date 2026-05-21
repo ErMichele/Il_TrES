@@ -108,7 +108,7 @@ function MettiLingua(index)
     IndiceLinguaCorrente = index
 end
 
-function IndiceLIngua()
+function IndiceLingua()
     return IndiceLinguaCorrente
 end
 
@@ -119,7 +119,7 @@ end
 return {
     PrendiTesto = PrendiTesto,
     MettiLingua = MettiLingua,
-    IndiceLIngua = IndiceLIngua,
+    IndiceLingua = IndiceLingua,
     PrendiLingua = PrendiLingua,
     Lingue = Lingue
 }

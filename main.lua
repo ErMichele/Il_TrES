@@ -8,7 +8,7 @@ local LingueModule = require("Modules/Lingue")  -- Funzioni di localizzazione (P
 
 -- Alias for frequently used functions
 local GetLocalizedText = LingueModule.PrendiTesto
-local IndiceLinguaCorrente = LingueModule.IndiceLIngua
+local IndiceLinguaCorrente = LingueModule.IndiceLingua
 local MettiLingua = LingueModule.MettiLingua
 local PrendiLingua = LingueModule.PrendiLingua
 local Debug = DebugModule.Debug
@@ -23,7 +23,7 @@ local Musica_Sfondo
 local LogCheck = true -- Controls whether debug messages are written to file
 
 local Effetti_Sonori = { -- Sound effects
-    Selezione = love.audio.newSource("Resources/SoundEffects/Select.mp3", "stream"),
+    Selezione = love.audio.newSource("Resources/SFX/Select.mp3", "stream"),
 }
 
 local Fonts = { -- Fonts used in the game
@@ -114,7 +114,7 @@ local function Resetta_Gioco()
     Stampa("INFO", GetLocalizedText("Log_ResetGioco"))
 end
 
---- Executes a move on the clicked cell and checks for win/draw conditions.
+--- Executes a mossa on the clicked cell and checks for win/draw conditions.
 --- @param riga number The row of the cell.
 --- @param colonna number The column of the cell.
 --- @param simbolo string 'X' or 'O'.
@@ -302,11 +302,8 @@ function love.update(dt)
             math.min(mouseX, Barra_Volume_Musica.x + Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
         Barra_Volume_Musica.Valore = (Barra_Volume_Musica.Punto_X - Barra_Volume_Musica.x) /
         (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato)
-        love.filesystem.write("Barra_Volume_Musica.txt", tostring(Barra_Volume_Musica.Valore))
         if Musica_Sfondo then
             Musica_Sfondo:setVolume(Barra_Volume_Musica.Valore)
-            -- Log only when value changes significantly or on release to avoid spam
-            -- Stampa("DEBUG", GetLocalizedText("Log_ModificaVolumeMusica", math.floor(Barra_Volume_Musica.Valore * 100)))
         end
     end
 
@@ -319,10 +316,7 @@ function love.update(dt)
                 Barra_Volume_Effetti_Sonori.Punto_Lato))
         Barra_Volume_Effetti_Sonori.Valore = (Barra_Volume_Effetti_Sonori.Punto_X - Barra_Volume_Effetti_Sonori.x) /
         (Barra_Volume_Effetti_Sonori.Larghezza - Barra_Volume_Effetti_Sonori.Punto_Lato)
-        love.filesystem.write("Barra_Volume_SFX.txt", tostring(Barra_Volume_Effetti_Sonori.Valore))
         Effetti_Sonori.Selezione:setVolume(Barra_Volume_Effetti_Sonori.Valore)
-        -- Log only when value changes significantly or on release to avoid spam
-        -- Stampa("DEBUG", GetLocalizedText("Log_ModificaVolumeSFX", math.floor(Barra_Volume_Effetti_Sonori.Valore * 100)))
     end
 
     -- Background music management.
@@ -493,16 +487,26 @@ function love.mousepressed(x, y, pulsante)
                 Effetti_Sonori.Selezione:play()
             end
         elseif SchedaSelezionata == "Impostazioni" then
-            -- Check click on music volume bar slider
-            if x >= Barra_Volume_Musica.Punto_X and x <= Barra_Volume_Musica.Punto_X + Barra_Volume_Musica.Punto_Lato and
-                y >= Barra_Volume_Musica.y - 5 and y <= Barra_Volume_Musica.y + Barra_Volume_Musica.Altezza + 5 then
+            -- Item 5 Fix: Check click on whole horizontal track of music volume bar
+            if x >= Barra_Volume_Musica.x and x <= Barra_Volume_Musica.x + Barra_Volume_Musica.Larghezza and
+                y >= Barra_Volume_Musica.y - 10 and y <= Barra_Volume_Musica.y + Barra_Volume_Musica.Altezza + 10 then
                 Barra_Volume_Musica.Usato = true
+                Barra_Volume_Musica.Punto_X = math.max(Barra_Volume_Musica.x,
+                    math.min(x, Barra_Volume_Musica.x + Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato))
+                Barra_Volume_Musica.Valore = (Barra_Volume_Musica.Punto_X - Barra_Volume_Musica.x) /
+                (Barra_Volume_Musica.Larghezza - Barra_Volume_Musica.Punto_Lato)
+                if Musica_Sfondo then Musica_Sfondo:setVolume(Barra_Volume_Musica.Valore) end
                 Effetti_Sonori.Selezione:play()
             end
-            -- Check click on SFX volume bar slider
-            if x >= Barra_Volume_Effetti_Sonori.Punto_X and x <= Barra_Volume_Effetti_Sonori.Punto_X + Barra_Volume_Effetti_Sonori.Punto_Lato and
-                y >= Barra_Volume_Effetti_Sonori.y - 5 and y <= Barra_Volume_Effetti_Sonori.y + Barra_Volume_Effetti_Sonori.Altezza + 5 then
+            -- Item 5 Fix: Check click on whole horizontal track of SFX volume bar
+            if x >= Barra_Volume_Effetti_Sonori.x and x <= Barra_Volume_Effetti_Sonori.x + Barra_Volume_Effetti_Sonori.Larghezza and
+                y >= Barra_Volume_Effetti_Sonori.y - 10 and y <= Barra_Volume_Effetti_Sonori.y + Barra_Volume_Effetti_Sonori.Altezza + 10 then
                 Barra_Volume_Effetti_Sonori.Usato = true
+                Barra_Volume_Effetti_Sonori.Punto_X = math.max(Barra_Volume_Effetti_Sonori.x,
+                    math.min(x, Barra_Volume_Effetti_Sonori.x + Barra_Volume_Effetti_Sonori.Larghezza - Barra_Volume_Effetti_Sonori.Punto_Lato))
+                Barra_Volume_Effetti_Sonori.Valore = (Barra_Volume_Effetti_Sonori.Punto_X - Barra_Volume_Effetti_Sonori.x) /
+                (Barra_Volume_Effetti_Sonori.Larghezza - Barra_Volume_Effetti_Sonori.Punto_Lato)
+                Effetti_Sonori.Selezione:setVolume(Barra_Volume_Effetti_Sonori.Valore)
                 Effetti_Sonori.Selezione:play()
             end
             -- Check click on language arrows
@@ -549,11 +553,14 @@ end
 --- Called when a mouse button is released.
 function love.mousereleased(x, y, pulsante)
     if pulsante == 1 then
+        -- Item 2 Fix: Only write configuration data to files on release, rather than every frame
         if Barra_Volume_Musica.Usato then
+            love.filesystem.write("Barra_Volume_Musica.txt", tostring(Barra_Volume_Musica.Valore))
             Barra_Volume_Musica.Usato = false
             Stampa("DEBUG", GetLocalizedText("Log_ModificaVolumeMusica", math.floor(Barra_Volume_Musica.Valore * 100)))
         end
         if Barra_Volume_Effetti_Sonori.Usato then
+            love.filesystem.write("Barra_Volume_SFX.txt", tostring(Barra_Volume_Effetti_Sonori.Valore))
             Barra_Volume_Effetti_Sonori.Usato = false
             Stampa("DEBUG", GetLocalizedText("Log_ModificaVolumeSFX", math.floor(Barra_Volume_Effetti_Sonori.Valore * 100)))
         end
@@ -606,8 +613,11 @@ function love.draw()
             GetLocalizedText("Crediti_Uscita")
         }
 
+        -- Item 6 Fix: Dynamically compute scaling offsets so typography scales nicely with aspect ratio changes
+        local startY = love.graphics.getHeight() * 0.15
+        local spaziaturaCrediti = love.graphics.getHeight() * 0.05
         for i, line in ipairs(TestoCrediti) do
-            love.graphics.printf(line, 0, 100 + i * 30, love.graphics.getWidth(), "center")
+            love.graphics.printf(line, 0, startY + i * spaziaturaCrediti, love.graphics.getWidth(), "center")
         end
     elseif SchedaSelezionata == "Impostazioni" then
         love.graphics.setFont(Fonts.Titolo.Carattere)
